@@ -1,7 +1,7 @@
 services:
   spring-boot-app:
-    image: docker-springboot
+    build: .
     ports:
-      - "3333:8081"   # 호스트 포트 3333을 컨테이너의 8081 포트에 매핑
+      - "3333:8081"
     container_name: springboot
     env_file: .env
