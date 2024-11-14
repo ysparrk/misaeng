@@ -1,6 +1,6 @@
 services:
   spring-boot-app:
-    build: .
+    image: ubuntu-spring-boot-app
     container_name: springboot
     ports:
       - "3333:8081"
