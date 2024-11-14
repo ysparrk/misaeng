@@ -6,3 +6,10 @@
 # Datasource local storage ignored files
 /dataSources/
 /dataSources.local.xml
+
+### yml file ###
+/src/main/resources/application-secret.yml
+
+
+### .env 파일 ###
+/.env/
