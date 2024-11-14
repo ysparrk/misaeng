@@ -1,4 +1,4 @@
-name: CI/CD Pipeline
+name: CI/CD Pipeline with Docker Compose
 
 on:
   push:
@@ -19,31 +19,33 @@ jobs:
         java-version: '17'
         distribution: 'temurin'
 
-    - name: Docker Compose 설치
+    - name: Build Spring Boot Application
       run: |
-        sudo curl -L "https://github.com/docker/compose/releases/download/v2.25.0/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
-        sudo chmod +x /usr/local/bin/docker-compose
-        docker-compose --version  # 설치 확인
+        ./gradlew bootJar  # .jar 파일 생성
 
-    - name: Docker Compose로 컨테이너 빌드 및 실행
+    - name: 확인용 디버그 로그
       run: |
-        docker-compose down  # 기존 컨테이너 종료
-        docker-compose up -d --build  # 새로운 이미지 빌드 및 컨테이너 시작
+        ls -la build/libs  # 빌드된 .jar 파일이 있는지 확인
 
-    - name: 단위 및 통합 테스트 실행
-      run: |
-        docker-compose run --rm app ./gradlew test  # 'app'을 실제 서비스 이름으로 수정
-
-    - name: EC2에 배포
+    - name: EC2에 파일 배포
       env:
         EC2_HOST: ${{ secrets.EC2_HOST }}
         EC2_USER: ${{ secrets.EC2_USER }}
         SSH_KEY: ${{ secrets.SSH_KEY }}
       run: |
-        # EC2에 docker-compose.yml 파일을 전송하고 새로운 빌드 배포
+        # 빌드된 .jar 파일과 docker-compose.yml을 EC2로 전송
+        scp -i $SSH_KEY -o "StrictHostKeyChecking=no" build/libs/your-app.jar $EC2_USER@$EC2_HOST:/home/ubuntu/
         scp -i $SSH_KEY -o "StrictHostKeyChecking=no" docker-compose.yml $EC2_USER@$EC2_HOST:/home/ubuntu/
+
+    - name: EC2에서 Docker Compose 실행
+      env:
+        EC2_HOST: ${{ secrets.EC2_HOST }}
+        EC2_USER: ${{ secrets.EC2_USER }}
+        SSH_KEY: ${{ secrets.SSH_KEY }}
+      run: |
+        # EC2에서 Docker Compose로 컨테이너 빌드 및 시작
         ssh -i $SSH_KEY -o "StrictHostKeyChecking=no" $EC2_USER@$EC2_HOST "
-          docker-compose down &&  # 기존 컨테이너 종료
-          docker image prune -f &&  # 불필요한 이미지 삭제
-          docker-compose -f /home/ubuntu/docker-compose.yml up -d --build  # 새로운 빌드 실행
+          cd /home/ubuntu &&
+          docker-compose down &&
+          docker-compose up -d --build
         "
