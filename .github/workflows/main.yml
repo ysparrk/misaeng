@@ -4,7 +4,7 @@ on:
   push:
     branches:
       - main
-  workflow_dispatch:  # 수동 실행 트리거
+  workflow_dispatch:
 
 jobs:
   deploy:
@@ -24,11 +24,6 @@ jobs:
       run: |
         ./gradlew bootJar  # .jar 파일 생성
 
-    - name: 파일 확인 (디버그)
-      run: |
-        ls -la  # 루트 디렉토리의 모든 파일 확인
-        ls -la build/libs  # 빌드 결과물이 있는지 확인
-
     - name: SSH 키 파일 생성
       run: |
         mkdir -p ~/.ssh  # .ssh 디렉토리 생성
@@ -45,7 +40,6 @@ jobs:
         # 빌드된 .jar 파일과 docker-compose.yml을 EC2로 전송
         scp -i ~/.ssh/id_rsa -o "StrictHostKeyChecking=no" build/libs/misaeng-0.0.1-SNAPSHOT.jar $EC2_USER@$EC2_HOST:/home/ubuntu/app.jar
         scp -i ~/.ssh/id_rsa -o "StrictHostKeyChecking=no" docker-compose.yml $EC2_USER@$EC2_HOST:/home/ubuntu/
-        scp -i ~/.ssh/id_rsa -o "StrictHostKeyChecking=no" .env $EC2_USER@$EC2_HOST:/home/ubuntu/
 
     - name: EC2에서 Docker Compose 실행
       env:
@@ -55,6 +49,6 @@ jobs:
         # EC2에서 Docker Compose로 컨테이너 빌드 및 시작
         ssh -i ~/.ssh/id_rsa -o "StrictHostKeyChecking=no" $EC2_USER@$EC2_HOST "
           cd /home/ubuntu &&
-          docker-compose -f docker-compose.yml down &&
-          docker-compose -f docker-compose.yml up -d --build
+          sudo docker-compose down &&
+          sudo docker-compose up -d --build
         "
