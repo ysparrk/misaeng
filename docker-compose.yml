@@ -6,4 +6,5 @@ services:
       - "3333:8081"
     volumes:
       - /home/ubuntu/app.jar:/app.jar
+      - /home/ubuntu/application-secret.yml:/application-secret.yml
     entrypoint: ["java", "-Djava.security.egd=file:/dev/./urandom", "-jar", "/app.jar"]
