@@ -1,9 +1,10 @@
-name: CI/CD Pipeline with Docker Compose
+name: CI/CD Pipeline
 
 on:
   push:
     branches:
       - main
+  workflow_dispatch:
 
 jobs:
   deploy:
