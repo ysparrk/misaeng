@@ -14,8 +14,8 @@ import java.time.LocalDateTime;
 @Table(name = "member")
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Getter
-@SQLDelete(sql = "UPDATE member SET deleted_at = now() WHERE member_id = ?")
-@SQLRestriction("isDeleted = false")
+@SQLDelete(sql = "UPDATE member SET deleted_at = now() WHERE id = ?")
+@Where(clause = "is_deleted = false")
 public class Member {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
