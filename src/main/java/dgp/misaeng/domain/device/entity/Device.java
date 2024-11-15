@@ -1,5 +1,6 @@
 package dgp.misaeng.domain.device.entity;
 
+import dgp.misaeng.domain.member.entity.Member;
 import jakarta.persistence.*;
 import jakarta.persistence.Table;
 import lombok.AccessLevel;
@@ -27,6 +28,10 @@ public class Device {
 
     @Column(name = "device_type", length = 30, nullable = false)
     private String deviceType;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "member_id", nullable = false)
+    private Member member;
 
     @CreationTimestamp
     @Column(name = "created_at", nullable = false)

@@ -1,5 +1,6 @@
 package dgp.misaeng.domain.microbe.entity;
 
+import dgp.misaeng.domain.device.entity.Device;
 import jakarta.persistence.*;
 import jakarta.persistence.Table;
 import lombok.AccessLevel;
@@ -27,6 +28,10 @@ public class Microbe {
 
     @Column(name = "rgb_stat", length = 30, nullable = false)
     private String rgbStat;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "device_id", nullable = false)
+    private Device device;
 
     @CreationTimestamp
     @Column(name = "created_at", nullable = false)
