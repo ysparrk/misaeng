@@ -16,7 +16,7 @@ import java.time.LocalDateTime;
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Getter
 @SQLDelete(sql = "UPDATE microbe SET deleted_at = now() WHERE microbe_id = ?")
-@SQLRestriction("isDeleted = false")
+@Where(clause = "is_deleted = false")
 public class Microbe {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
