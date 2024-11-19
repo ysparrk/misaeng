@@ -29,6 +29,9 @@ public class Device {
     @Column(name = "device_type", length = 30, nullable = false)
     private String deviceType;
 
+    @Column(name = "device_name", length = 30)
+    private String deviceName;
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "member_id", nullable = false)
     private Member member;
@@ -49,10 +52,12 @@ public class Device {
     private LocalDateTime deletedAt;
 
     @Builder
-    public Device(Long deviceId, String serialNum, String deviceType, LocalDateTime createdAt, LocalDateTime modifiedAt, Boolean isDeleted, LocalDateTime deletedAt) {
+    public Device(Long deviceId, String serialNum, String deviceType, String deviceName, Member member, LocalDateTime createdAt, LocalDateTime modifiedAt, Boolean isDeleted, LocalDateTime deletedAt) {
         this.deviceId = deviceId;
         this.serialNum = serialNum;
         this.deviceType = deviceType;
+        this.deviceName = deviceName;
+        this.member = member;
         this.createdAt = createdAt;
         this.modifiedAt = modifiedAt;
         this.isDeleted = isDeleted;
