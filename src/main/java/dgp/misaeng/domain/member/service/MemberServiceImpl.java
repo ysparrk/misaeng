@@ -27,7 +27,7 @@ public class MemberServiceImpl implements MemberService {
         // 일단 등록은 해놓고 추가 정보 없을 시 입력하는 페이지로 이동하도록 처리
         if(member == null){
             member = Member.builder()
-                    .nickname(oauthUserInfo.getNickname())
+                    .name(oauthUserInfo.getNickname())
                     .email(oauthUserInfo.getEmail())
                     .isDeleted(false)
                     .build();
