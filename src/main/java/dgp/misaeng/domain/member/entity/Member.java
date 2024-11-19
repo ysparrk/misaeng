@@ -1,5 +1,6 @@
 package dgp.misaeng.domain.member.entity;
 
+import dgp.misaeng.global.util.enums.AuthProvider;
 import jakarta.persistence.*;
 import jakarta.persistence.Table;
 import lombok.AccessLevel;
@@ -25,8 +26,11 @@ public class Member {
     @Column(name = "email", length = 50, nullable = false)
     private String email;
 
-    @Column(name = "nickname", length = 12, nullable = false)
-    private String nickname;
+    @Column(name = "name", length = 12, nullable = false)
+    private String name;
+
+    @Column(name = "auth_provider")
+    AuthProvider authProvider;
 
     @CreationTimestamp
     @Column(name = "created_at", nullable = false)
@@ -44,10 +48,10 @@ public class Member {
     private LocalDateTime deletedAt;
 
     @Builder
-    public Member(Long id, String email, String nickname, LocalDateTime createdAt, LocalDateTime modifiedAt, Boolean isDeleted, LocalDateTime deletedAt) {
+    public Member(Long id, String email, String name, LocalDateTime createdAt, LocalDateTime modifiedAt, Boolean isDeleted, LocalDateTime deletedAt) {
         this.id = id;
         this.email = email;
-        this.nickname = nickname;
+        this.name = name;
         this.createdAt = createdAt;
         this.modifiedAt = modifiedAt;
         this.isDeleted = isDeleted;
