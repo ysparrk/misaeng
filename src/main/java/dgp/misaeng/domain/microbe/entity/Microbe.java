@@ -26,6 +26,10 @@ public class Microbe {
     @Column(name = "microbe_name", length = 30, nullable = false)
     private String microbeName;
 
+    @Column(name = "survive", nullable = false)
+    @ColumnDefault("true")
+    private Boolean survive;
+
     @ManyToOne(fetch = FetchType.LAZY)
     private Device device;
 

@@ -38,9 +38,10 @@ public enum ErrorCode {
     NO_FILE_EXTENSION(HttpStatus.BAD_REQUEST, "S003", "파일 확장자가 존재하지 않습니다."),
     INVALID_FILE_EXTENSION(HttpStatus.BAD_REQUEST, "S004", "유효하지 않은 파일 확장자입니다."),
     PUT_OBJECT_EXCEPTION(HttpStatus.INTERNAL_SERVER_ERROR, "S005", "S3에 파일 업로드 중 예외가 발생했습니다."),
-    IO_EXCEPTION_ON_IMAGE_DELETE(HttpStatus.INTERNAL_SERVER_ERROR, "S006", "이미지 삭제 중 IO 예외가 발생했습니다.");
+    IO_EXCEPTION_ON_IMAGE_DELETE(HttpStatus.INTERNAL_SERVER_ERROR, "S006", "이미지 삭제 중 IO 예외가 발생했습니다."),
 
-
+    // 미생물 Microbe
+    NO_SUCH_MICROBE(HttpStatus.BAD_REQUEST, "MI001", "현재 미생물이 기기 안에 존재하지 않습니다.");
 
     private final HttpStatus status;
     private final String code;

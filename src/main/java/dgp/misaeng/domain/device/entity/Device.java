@@ -64,16 +64,4 @@ public class Device {
         this.deletedAt = deletedAt;
     }
 
-    public static Device fromReqDto(DeviceReqDTO deviceReqDTO) {
-        return Device.builder()
-                .serialNum(deviceReqDTO.getSerialNum())
-                .deviceType(deviceReqDTO.getDeviceType())
-                .deviceName(deviceReqDTO.getDeviceName())
-                .build();
-    }
-
-    public void setMember(Member member) {
-        this.member = member;
-    }
-
 }
