@@ -1,5 +1,6 @@
 package dgp.misaeng.domain.device.entity;
 
+import dgp.misaeng.domain.device.dto.request.DeviceReqDTO;
 import dgp.misaeng.domain.member.entity.Member;
 import jakarta.persistence.*;
 import jakarta.persistence.Table;
@@ -33,7 +34,6 @@ public class Device {
     private String deviceName;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "member_id", nullable = false)
     private Member member;
 
     @CreationTimestamp
@@ -63,4 +63,17 @@ public class Device {
         this.isDeleted = isDeleted;
         this.deletedAt = deletedAt;
     }
+
+    public static Device fromReqDto(DeviceReqDTO deviceReqDTO) {
+        return Device.builder()
+                .serialNum(deviceReqDTO.getSerialNum())
+                .deviceType(deviceReqDTO.getDeviceType())
+                .deviceName(deviceReqDTO.getDeviceName())
+                .build();
+    }
+
+    public void setMember(Member member) {
+        this.member = member;
+    }
+
 }
