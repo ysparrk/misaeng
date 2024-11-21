@@ -26,11 +26,7 @@ public class Microbe {
     @Column(name = "microbe_name", length = 30, nullable = false)
     private String microbeName;
 
-    @Column(name = "rgb_stat", length = 30, nullable = false)
-    private String rgbStat;
-
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "device_id", nullable = false)
     private Device device;
 
     @CreationTimestamp
@@ -48,11 +44,12 @@ public class Microbe {
     @Column(name = "deleted_at")
     private LocalDateTime deletedAt;
 
+
     @Builder
-    public Microbe(Long microbeId, String microbeName, String rgbStat, LocalDateTime createdAt, LocalDateTime modifiedAt, Boolean isDeleted, LocalDateTime deletedAt) {
+    public Microbe(Long microbeId, String microbeName, Device device, LocalDateTime createdAt, LocalDateTime modifiedAt, Boolean isDeleted, LocalDateTime deletedAt) {
         this.microbeId = microbeId;
         this.microbeName = microbeName;
-        this.rgbStat = rgbStat;
+        this.device = device;
         this.createdAt = createdAt;
         this.modifiedAt = modifiedAt;
         this.isDeleted = isDeleted;

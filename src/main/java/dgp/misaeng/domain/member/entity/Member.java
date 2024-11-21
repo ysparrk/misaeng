@@ -29,6 +29,7 @@ public class Member {
     @Column(name = "name", length = 12, nullable = false)
     private String name;
 
+    @Enumerated(EnumType.STRING)
     @Column(name = "auth_provider")
     AuthProvider authProvider;
 
