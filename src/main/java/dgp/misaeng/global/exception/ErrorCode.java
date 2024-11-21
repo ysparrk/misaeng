@@ -30,7 +30,17 @@ public enum ErrorCode {
     INVALID_EMAIL_FORMAT(HttpStatus.BAD_REQUEST, "M003", "이메일 제약조건에 맞지 않습니다."),
     INVALID_PASSWORD_FORMAT(HttpStatus.BAD_REQUEST, "M004", "비밀번호 제약조건에 맞지 않습니다."),
     INVALID_NAME_FORMAT(HttpStatus.BAD_REQUEST, "M005", "이름 제약조건에 맞지 않습니다."),
-    MEMBER_NOT_FOUND(HttpStatus.BAD_REQUEST, "M007", "멤버가 존재하지 않습니다.");
+    MEMBER_NOT_FOUND(HttpStatus.BAD_REQUEST, "M007", "멤버가 존재하지 않습니다."),
+
+    // S3
+    EMPTY_FILE_EXCEPTION(HttpStatus.BAD_REQUEST, "S001", "파일이 비어 있습니다."),
+    IO_EXCEPTION_ON_IMAGE_UPLOAD(HttpStatus.INTERNAL_SERVER_ERROR, "S002", "이미지 업로드 중 IO 예외가 발생했습니다."),
+    NO_FILE_EXTENSION(HttpStatus.BAD_REQUEST, "S003", "파일 확장자가 존재하지 않습니다."),
+    INVALID_FILE_EXTENSION(HttpStatus.BAD_REQUEST, "S004", "유효하지 않은 파일 확장자입니다."),
+    PUT_OBJECT_EXCEPTION(HttpStatus.INTERNAL_SERVER_ERROR, "S005", "S3에 파일 업로드 중 예외가 발생했습니다."),
+    IO_EXCEPTION_ON_IMAGE_DELETE(HttpStatus.INTERNAL_SERVER_ERROR, "S006", "이미지 삭제 중 IO 예외가 발생했습니다.");
+
+
 
     private final HttpStatus status;
     private final String code;
