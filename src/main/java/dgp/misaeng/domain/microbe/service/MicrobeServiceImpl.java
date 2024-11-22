@@ -23,7 +23,7 @@ public class MicrobeServiceImpl implements MicrobeService {
     @Override
     public void saveRecord(MicrobeRecordReqDTO microbeRecordReqDTO, MultipartFile image) {
 
-        Long microbeId = microbeRepository.findMicrobeIdBySerialNum(microbeRecordReqDTO.getSericalNum()).orElseThrow(() -> new CustomException(ErrorCode.NO_SUCH_MICROBE) {
+        Long microbeId = microbeRepository.findMicrobeIdBySerialNum(microbeRecordReqDTO.getSerialNum()).orElseThrow(() -> new CustomException(ErrorCode.NO_SUCH_MICROBE) {
             @Override
             public ErrorCode getErrorCode() {
                 return super.getErrorCode();

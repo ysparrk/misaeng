@@ -7,7 +7,7 @@ import java.util.List;
 
 @Getter
 public class MicrobeRecordReqDTO {
-    private String sericalNum;
+    private String serialNum;
     private List<String> foodCategory;
     private float weight;
     private String rgbStat;
