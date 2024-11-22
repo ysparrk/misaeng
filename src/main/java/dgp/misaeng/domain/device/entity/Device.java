@@ -1,6 +1,5 @@
 package dgp.misaeng.domain.device.entity;
 
-import dgp.misaeng.domain.device.dto.request.DeviceReqDTO;
 import dgp.misaeng.domain.member.entity.Member;
 import jakarta.persistence.*;
 import jakarta.persistence.Table;

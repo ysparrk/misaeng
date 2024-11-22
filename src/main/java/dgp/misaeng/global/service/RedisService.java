@@ -1,7 +1,7 @@
 package dgp.misaeng.global.service;
 
-import dgp.misaeng.domain.environment.dto.request.EnvironmentReqDTO;
-import dgp.misaeng.domain.food.dto.request.FoodReqDTO;
+import dgp.misaeng.domain.microbe.dto.request.MicrobeEnvironmentReqDTO;
+import dgp.misaeng.domain.microbe.dto.request.MicrobeRecordReqDTO;
 import dgp.misaeng.domain.microbe.repository.MicrobeRepository;
 import dgp.misaeng.global.exception.CustomException;
 import dgp.misaeng.global.exception.ErrorCode;
@@ -22,18 +22,18 @@ public class RedisService {
 
     private final RedisTemplate<String, String> securityRedis;
     private final RedisTemplate<String, String> environmentRedis;
-    private final RedisTemplate<String, String> foodRedis;
+    private final RedisTemplate<String, String> microbeRedis;
     private final MicrobeRepository microbeRepository;
 
 
     @Autowired
     public RedisService(@Qualifier("SecurityRedis") RedisTemplate<String, String> securityRedis,
                         @Qualifier("EnvironmentRedis") RedisTemplate<String, String> environmentRedis,
-                        @Qualifier("FoodRedis") RedisTemplate<String, String> foodRedis,
+                        @Qualifier("MicrobeRedis") RedisTemplate<String, String> microbeRedis,
                         MicrobeRepository microbeRepository) {
         this.securityRedis = securityRedis;
         this.environmentRedis = environmentRedis;
-        this.foodRedis = foodRedis;
+        this.microbeRedis = microbeRedis;
         this.microbeRepository = microbeRepository;
     }
 
@@ -55,8 +55,8 @@ public class RedisService {
     }
 
 
-    public void saveEnvironmentData(EnvironmentReqDTO environmentReqDTO) {
-        Long microbeId = microbeRepository.findMicrobeIdBySerialNum(environmentReqDTO.getSericalNum()).orElseThrow(() -> new CustomException(ErrorCode.NO_SUCH_MICROBE) {
+    public void saveEnvironmentData(MicrobeEnvironmentReqDTO microbeEnvironmentReqDTO) {
+        Long microbeId = microbeRepository.findMicrobeIdBySerialNum(microbeEnvironmentReqDTO.getSericalNum()).orElseThrow(() -> new CustomException(ErrorCode.NO_SUCH_MICROBE) {
             @Override
             public ErrorCode getErrorCode() {
                 return super.getErrorCode();
@@ -73,8 +73,8 @@ public class RedisService {
 
         String value = String.format(
                 "{\"temperature\": %.2f, \"humidity\": %.2f, \"created_at\": \"%s\", \"timestamp\": %d}",
-                environmentReqDTO.getTemperature(),
-                environmentReqDTO.getHumidity(),
+                microbeEnvironmentReqDTO.getTemperature(),
+                microbeEnvironmentReqDTO.getHumidity(),
                 createdAtString,
                 timestamp
         );
@@ -83,31 +83,33 @@ public class RedisService {
     }
 
 
-    public void saveFoodData(FoodReqDTO foodReqDTO) {
-        Long microbeId = microbeRepository.findMicrobeIdBySerialNum(foodReqDTO.getSericalNum()).orElseThrow(() -> new CustomException(ErrorCode.NO_SUCH_MICROBE) {
-            @Override
-            public ErrorCode getErrorCode() {
-                return super.getErrorCode();
-            }
-        });
-
+    public void saveMicrobeRecordData(Long microbeId, MicrobeRecordReqDTO microbeRecordReqDTO, String imgUrl) {
         String key = "microbe:" + microbeId;
 
-        // 현재 시간 생성
+        // 현재 현재시간 생성
         long timestamp = System.currentTimeMillis();
         LocalDateTime createdAt = LocalDateTime.now();
         String createdAtString = createdAt.format(DateTimeFormatter.ISO_LOCAL_DATE_TIME);
 
-        String value = String.format(
-                "{\"weight\": %.2f, \"rgb_stat\": \"%s\", \"food_category\": %s, \"created_at\": \"%s\", \"timestamp\": %d}",
-                foodReqDTO.getWeight(),
-                foodReqDTO.getRgbStat(),
-                foodReqDTO.getFoodCategory() != null ? foodReqDTO.getFoodCategory().toString() : "[]",
-                createdAtString,
-                timestamp
-        );
+        // 저장할 데이터 생성 (JSON 문자열 형태로)
+        StringBuilder valueBuilder = new StringBuilder();
+        valueBuilder.append("{");
+        valueBuilder.append("\"weight\": ").append(microbeRecordReqDTO.getWeight()).append(", ");
+        valueBuilder.append("\"rgb_stat\": \"").append(microbeRecordReqDTO.getRgbStat()).append("\", ");
+        valueBuilder.append("\"food_category\": ").append(
+                microbeRecordReqDTO.getFoodCategory() != null ? microbeRecordReqDTO.getFoodCategory().toString() : "[]"
+        ).append(", ");
+        valueBuilder.append("\"created_at\": \"").append(createdAtString).append("\", ");
+        valueBuilder.append("\"timestamp\": ").append(timestamp).append(", ");
+        valueBuilder.append("\"img_url\": \"").append(imgUrl != null ? imgUrl : "").append("\", ");
+        valueBuilder.append("\"microbe_soil_condition\": \"").append(
+                microbeRecordReqDTO.getMicrobeSoilCondition() != null ? microbeRecordReqDTO.getMicrobeSoilCondition().toString() : ""
+        ).append("\"");
+        valueBuilder.append("}");
 
-        foodRedis.opsForZSet().add(key, value, timestamp);
+        String value = valueBuilder.toString();
+
+        microbeRedis.opsForZSet().add(key, value, timestamp);
     }
 
 }

@@ -11,7 +11,7 @@ import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.serializer.StringRedisSerializer;
 
 @Configuration
-public class FoodRedisConfig {
+public class MicrobeRedisConfig {
     @Value("${spring.redis3.host}")
     private String REDIS3_HOST;
 
@@ -22,8 +22,8 @@ public class FoodRedisConfig {
     private String REDIS3_PW;
 
     @Primary
-    @Bean(name = "FoodRedisFactory")
-    public RedisConnectionFactory foodRedisFactory() {
+    @Bean(name = "MicrobeRedisFactory")
+    public RedisConnectionFactory microbeRedisFactory() {
         LettuceConnectionFactory connectionFactory = new LettuceConnectionFactory();
         connectionFactory.setHostName(REDIS3_HOST);
         connectionFactory.setPort(REDIS3_PORT);
@@ -32,8 +32,8 @@ public class FoodRedisConfig {
         return connectionFactory;
     }
 
-    @Bean(name = "FoodRedis")
-    public RedisTemplate<String, String> SubRedis(@Qualifier("FoodRedisFactory") RedisConnectionFactory redisConnectionFactory) {
+    @Bean(name = "MicrobeRedis")
+    public RedisTemplate<String, String> SubRedis(@Qualifier("MicrobeRedisFactory") RedisConnectionFactory redisConnectionFactory) {
         RedisTemplate<String, String> redisTemplate = new RedisTemplate<>();
         redisTemplate.setConnectionFactory(redisConnectionFactory);
         redisTemplate.setKeySerializer(new StringRedisSerializer());
