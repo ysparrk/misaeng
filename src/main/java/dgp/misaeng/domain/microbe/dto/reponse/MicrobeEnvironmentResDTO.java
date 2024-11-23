@@ -2,7 +2,9 @@ package dgp.misaeng.domain.microbe.dto.reponse;
 
 import dgp.misaeng.global.util.enums.EnvironmentState;
 import lombok.Builder;
+import lombok.Getter;
 
+@Getter
 public class MicrobeEnvironmentResDTO {
     private float temperature;
     private float humidity;

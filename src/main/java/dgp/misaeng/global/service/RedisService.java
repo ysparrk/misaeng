@@ -11,8 +11,13 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.LocalTime;
+import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
@@ -128,6 +133,37 @@ public class RedisService {
         }
 
         return latestData.iterator().next();
+    }
+
+    public List<String> getTodayMicrobeData(Long microbeId) {
+        String key = "microbe:" + microbeId;
+
+        LocalDate today = LocalDate.now();
+        LocalDateTime startOfDay = today.atStartOfDay();
+        LocalDateTime endOfDay = today.atTime(LocalTime.MAX);
+
+        long startTimestamp = startOfDay.atZone(ZoneId.systemDefault()).toInstant().toEpochMilli();
+        long endTimestamp = endOfDay.atZone(ZoneId.systemDefault()).toInstant().toEpochMilli();
+
+        Set<String> todayData = microbeRedis.opsForZSet().rangeByScore(key, startTimestamp, endTimestamp);
+
+        return todayData != null ? new ArrayList<>(todayData) : new ArrayList<>();
+    }
+
+    public String getLatestData(Long microbeId) {
+        String key = "microbe:" + microbeId;
+
+        // Redis ZSET에서 가장 최신 데이터 조회
+        Set<String> latestDataSet = microbeRedis.opsForZSet().reverseRange(key, 0, 0);
+        if (latestDataSet == null || latestDataSet.isEmpty()) {
+            throw new CustomException(ErrorCode.NO_ENVIRONMENT_DATA) {
+                @Override
+                public ErrorCode getErrorCode() {
+                    return super.getErrorCode();
+                }
+            };
+        }
+        return latestDataSet.iterator().next();
     }
 
 }

@@ -1,6 +1,7 @@
 package dgp.misaeng.domain.microbe.controller;
 
 import dgp.misaeng.domain.microbe.dto.reponse.MicrobeEnvironmentResDTO;
+import dgp.misaeng.domain.microbe.dto.reponse.MicrobeInfoResDTO;
 import dgp.misaeng.domain.microbe.dto.request.MicrobeEnvironmentReqDTO;
 import dgp.misaeng.domain.microbe.dto.request.MicrobeRecordReqDTO;
 import dgp.misaeng.domain.microbe.dto.request.MicrobeReqDTO;
@@ -56,6 +57,19 @@ public class MicrobeController {
                 .body(ResponseDTO.builder()
                         .message("현재 환경 정보 조회 성공")
                         .data(environment)
+                        .build());
+    }
+
+    @GetMapping("/info")
+    public ResponseEntity<ResponseDTO> getMicrobeInfo(
+            @RequestBody MicrobeReqDTO microbeReqDTO) {
+
+        MicrobeInfoResDTO microbeInfo = microbeService.getMicrobeInfo(microbeReqDTO.getMicrobeId());
+
+        return ResponseEntity.status(HttpStatus.OK)
+                .body(ResponseDTO.builder()
+                        .message("미생물 정보 조회 성공")
+                        .data(microbeInfo)
                         .build());
     }
 
