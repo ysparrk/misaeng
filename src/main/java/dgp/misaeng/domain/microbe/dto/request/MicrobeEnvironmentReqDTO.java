@@ -4,7 +4,7 @@ import lombok.Getter;
 
 @Getter
 public class MicrobeEnvironmentReqDTO {
-    private String sericalNum;
+    private String serialNum;
     private float temperature;
     private float humidity;
 
