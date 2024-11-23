@@ -41,7 +41,11 @@ public enum ErrorCode {
     IO_EXCEPTION_ON_IMAGE_DELETE(HttpStatus.INTERNAL_SERVER_ERROR, "S006", "이미지 삭제 중 IO 예외가 발생했습니다."),
 
     // 미생물 Microbe
-    NO_SUCH_MICROBE(HttpStatus.BAD_REQUEST, "MI001", "현재 미생물이 기기 안에 존재하지 않습니다.");
+    NO_SUCH_MICROBE(HttpStatus.BAD_REQUEST, "MI001", "현재 미생물이 기기 안에 존재하지 않습니다."),
+
+    // 캡슐 Capsule
+    CAPSULE_NOT_FOUND(HttpStatus.NOT_FOUND, "C001", "해당하는 캡슐 타입이 없습니다."),
+    INSUFFICIENT_STOCK(HttpStatus.NOT_FOUND, "C002", "캡슐의 재고가 부족합니다.");
 
     private final HttpStatus status;
     private final String code;
