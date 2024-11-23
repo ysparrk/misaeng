@@ -42,10 +42,14 @@ public enum ErrorCode {
 
     // 미생물 Microbe
     NO_SUCH_MICROBE(HttpStatus.BAD_REQUEST, "MI001", "현재 미생물이 기기 안에 존재하지 않습니다."),
+    NO_ENVIRONMENT_DATA(HttpStatus.NOT_FOUND, "MI002", "현재 환경데이터가 없습니다."),
 
     // 캡슐 Capsule
-    CAPSULE_NOT_FOUND(HttpStatus.NOT_FOUND, "C001", "해당하는 캡슐 타입이 없습니다."),
-    INSUFFICIENT_STOCK(HttpStatus.NOT_FOUND, "C002", "캡슐의 재고가 부족합니다.");
+    CAPSULE_NOT_FOUND(HttpStatus.NOT_FOUND, "CP001", "해당하는 캡슐 타입이 없습니다."),
+    INSUFFICIENT_STOCK(HttpStatus.NOT_FOUND, "CP002", "캡슐의 재고가 부족합니다."),
+
+    // 상태 State
+    JSON_PROCESSING_ERROR(HttpStatus.BAD_REQUEST, "", "JSON 처리 중 오류가 발생했습니다.");
 
     private final HttpStatus status;
     private final String code;

@@ -1,7 +1,9 @@
 package dgp.misaeng.domain.microbe.controller;
 
+import dgp.misaeng.domain.microbe.dto.reponse.MicrobeEnvironmentResDTO;
 import dgp.misaeng.domain.microbe.dto.request.MicrobeEnvironmentReqDTO;
 import dgp.misaeng.domain.microbe.dto.request.MicrobeRecordReqDTO;
+import dgp.misaeng.domain.microbe.dto.request.MicrobeReqDTO;
 import dgp.misaeng.domain.microbe.service.MicrobeService;
 import dgp.misaeng.global.dto.ResponseDTO;
 import dgp.misaeng.global.service.RedisService;
@@ -41,6 +43,19 @@ public class MicrobeController {
         return ResponseEntity.status(HttpStatus.OK)
                 .body(ResponseDTO.builder()
                         .message("현재 미생물 상태 저장 성공")
+                        .build());
+    }
+
+    @GetMapping("/environments")
+    public ResponseEntity<ResponseDTO> getEnvironment(
+            @RequestBody MicrobeReqDTO microbeReqDTO) {
+
+        MicrobeEnvironmentResDTO environment = microbeService.getEnvironment(microbeReqDTO.getMicrobeId());
+
+        return ResponseEntity.status(HttpStatus.OK)
+                .body(ResponseDTO.builder()
+                        .message("현재 환경 정보 조회 성공")
+                        .data(environment)
                         .build());
     }
 

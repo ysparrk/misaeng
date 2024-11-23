@@ -13,6 +13,7 @@ import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
 
@@ -110,6 +111,23 @@ public class RedisService {
         String value = valueBuilder.toString();
 
         microbeRedis.opsForZSet().add(key, value, timestamp);
+    }
+
+    public String getLatestEnvironmentData(Long microbeId) {
+        String key = "environment:" + microbeId;
+
+        Set<String> latestData = environmentRedis.opsForZSet().reverseRange(key, 0, 0);
+
+        if (latestData == null || latestData.isEmpty()) {
+            throw new CustomException(ErrorCode.NO_ENVIRONMENT_DATA) {
+                @Override
+                public ErrorCode getErrorCode() {
+                    return super.getErrorCode();
+                }
+            };
+        }
+
+        return latestData.iterator().next();
     }
 
 }
