@@ -48,6 +48,9 @@ public enum ErrorCode {
     CAPSULE_NOT_FOUND(HttpStatus.NOT_FOUND, "CP001", "해당하는 캡슐 타입이 없습니다."),
     INSUFFICIENT_STOCK(HttpStatus.NOT_FOUND, "CP002", "캡슐의 재고가 부족합니다."),
 
+    // 디바이스 Device
+    NO_SUCH_DEVICE(HttpStatus.BAD_REQUEST, "D001", "해당하는 기기가 없습니다."),
+
     // 상태 State
     JSON_PROCESSING_ERROR(HttpStatus.BAD_REQUEST, "", "JSON 처리 중 오류가 발생했습니다.");
 

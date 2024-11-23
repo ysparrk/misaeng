@@ -4,9 +4,13 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import dgp.misaeng.domain.device.entity.Device;
+import dgp.misaeng.domain.device.repository.DeviceRepository;
 import dgp.misaeng.domain.microbe.dto.reponse.MicrobeEnvironmentResDTO;
 import dgp.misaeng.domain.microbe.dto.reponse.MicrobeInfoResDTO;
+import dgp.misaeng.domain.microbe.dto.request.MicrobeNewReqDTO;
 import dgp.misaeng.domain.microbe.dto.request.MicrobeRecordReqDTO;
+import dgp.misaeng.domain.microbe.dto.request.MicrobeUpdateReqDTO;
 import dgp.misaeng.domain.microbe.entity.Microbe;
 import dgp.misaeng.domain.microbe.repository.MicrobeRepository;
 import dgp.misaeng.global.exception.CustomException;
@@ -24,6 +28,7 @@ import java.time.temporal.ChronoUnit;
 import java.util.Arrays;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
@@ -34,6 +39,7 @@ public class MicrobeServiceImpl implements MicrobeService {
     private final S3ImageService s3ImageService;
     private final RedisService redisService;
     private final ObjectMapper objectMapper;
+    private final DeviceRepository deviceRepository;
 
     @Override
     public void saveRecord(MicrobeRecordReqDTO microbeRecordReqDTO, MultipartFile image) {
@@ -134,6 +140,55 @@ public class MicrobeServiceImpl implements MicrobeService {
                 .forbidden(forbidden)
                 .build();
 
+    }
+
+    @Transactional
+    @Override
+    public void saveMicrobe(MicrobeNewReqDTO microbeNewReqDTO) {
+        //새로운 미생물 등록
+        Device device = deviceRepository.findById(microbeNewReqDTO.getDeviceId())
+                .orElseThrow(() -> new CustomException(ErrorCode.NO_SUCH_DEVICE) {
+                    @Override
+                    public ErrorCode getErrorCode() {
+                        return super.getErrorCode();
+                    }
+                });
+
+        Microbe microbe = Microbe.builder()
+                .device(device)
+                .microbeName(microbeNewReqDTO.getMicrobeName())
+                .build();
+
+        microbeRepository.save(microbe);
+    }
+
+    @Transactional
+    @Override
+    public void updateMicrobe(MicrobeUpdateReqDTO microbeUpdateReqDTO) {
+
+        Microbe microbe = microbeRepository.findById(microbeUpdateReqDTO.getMicrobeId())
+                .orElseThrow(() -> new CustomException(ErrorCode.NO_SUCH_MICROBE) {
+                    @Override
+                    public ErrorCode getErrorCode() {
+                        return super.getErrorCode();
+                    }
+                });
+
+        microbe.setMicrobeName(microbeUpdateReqDTO.getMicrobeName());
+    }
+
+    @Transactional
+    @Override
+    public void deleteMicrobe(Long microbeId) {
+        Microbe microbe = microbeRepository.findById(microbeId)
+                .orElseThrow(() -> new CustomException(ErrorCode.NO_SUCH_MICROBE) {
+                    @Override
+                    public ErrorCode getErrorCode() {
+                        return super.getErrorCode();
+                    }
+                });
+
+        microbeRepository.delete(microbe);
     }
 
     // 온도 상태 계산

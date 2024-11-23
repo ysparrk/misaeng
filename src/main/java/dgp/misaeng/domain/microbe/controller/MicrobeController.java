@@ -2,9 +2,7 @@ package dgp.misaeng.domain.microbe.controller;
 
 import dgp.misaeng.domain.microbe.dto.reponse.MicrobeEnvironmentResDTO;
 import dgp.misaeng.domain.microbe.dto.reponse.MicrobeInfoResDTO;
-import dgp.misaeng.domain.microbe.dto.request.MicrobeEnvironmentReqDTO;
-import dgp.misaeng.domain.microbe.dto.request.MicrobeRecordReqDTO;
-import dgp.misaeng.domain.microbe.dto.request.MicrobeReqDTO;
+import dgp.misaeng.domain.microbe.dto.request.*;
 import dgp.misaeng.domain.microbe.service.MicrobeService;
 import dgp.misaeng.global.dto.ResponseDTO;
 import dgp.misaeng.global.service.RedisService;
@@ -73,4 +71,41 @@ public class MicrobeController {
                         .build());
     }
 
+    @PostMapping
+    public ResponseEntity<ResponseDTO> saveNewMicrobe(
+            @RequestBody MicrobeNewReqDTO microbeNewReqDTO
+    ) {
+        microbeService.saveMicrobe(microbeNewReqDTO);
+
+        return ResponseEntity.status(HttpStatus.OK)
+                .body(ResponseDTO.builder()
+                        .message("새로운 미생물 등록 성공")
+                        .build());
+    }
+
+    @PutMapping
+    public ResponseEntity<ResponseDTO> updateMicrobe(
+            @RequestBody MicrobeUpdateReqDTO microbeUpdateReqDTO
+    ) {
+
+        microbeService.updateMicrobe(microbeUpdateReqDTO);
+
+        return ResponseEntity.status(HttpStatus.OK)
+                .body(ResponseDTO.builder()
+                        .message("미생물 정보 수정 성공")
+                        .build());
+    }
+
+    @DeleteMapping()
+    public ResponseEntity<ResponseDTO> deleteMicrobe(
+            @RequestBody MicrobeReqDTO microbeReqDTO
+    ) {
+
+        microbeService.deleteMicrobe(microbeReqDTO.getMicrobeId());
+
+        return ResponseEntity.status(HttpStatus.OK)
+                .body(ResponseDTO.builder()
+                        .message("미생물 삭제 성공")
+                        .build());
+    }
 }
