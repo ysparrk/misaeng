@@ -63,4 +63,8 @@ public class Microbe {
     public void setMicrobeName(String microbeName) {
         this.microbeName = microbeName;
     }
+
+    public void setSurvive(Boolean survive) {
+        this.survive = survive;
+    }
 }

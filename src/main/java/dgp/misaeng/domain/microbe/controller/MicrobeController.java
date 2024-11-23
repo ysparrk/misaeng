@@ -96,7 +96,7 @@ public class MicrobeController {
                         .build());
     }
 
-    @DeleteMapping()
+    @DeleteMapping
     public ResponseEntity<ResponseDTO> deleteMicrobe(
             @RequestBody MicrobeReqDTO microbeReqDTO
     ) {
@@ -106,6 +106,19 @@ public class MicrobeController {
         return ResponseEntity.status(HttpStatus.OK)
                 .body(ResponseDTO.builder()
                         .message("미생물 삭제 성공")
+                        .build());
+    }
+
+    @PutMapping("/expire")
+    public ResponseEntity<ResponseDTO> expireMicrobe(
+            @RequestBody MicrobeReqDTO microbeReqDTO
+    ) {
+
+        microbeService.expireMicrobe(microbeReqDTO.getMicrobeId());
+
+        return ResponseEntity.status(HttpStatus.OK)
+                .body(ResponseDTO.builder()
+                        .message("미생물 만료 성공")
                         .build());
     }
 }

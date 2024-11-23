@@ -191,6 +191,20 @@ public class MicrobeServiceImpl implements MicrobeService {
         microbeRepository.delete(microbe);
     }
 
+    @Transactional
+    @Override
+    public void expireMicrobe(Long microbeId) {
+        Microbe microbe = microbeRepository.findById(microbeId)
+                .orElseThrow(() -> new CustomException(ErrorCode.NO_SUCH_MICROBE) {
+                    @Override
+                    public ErrorCode getErrorCode() {
+                        return super.getErrorCode();
+                    }
+                });
+
+        microbe.setSurvive(false);
+    }
+
     // 온도 상태 계산
     private EnvironmentState determineTemperatureState(float temperature) {
         if (temperature >= 20 && temperature <= 40) {

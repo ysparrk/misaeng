@@ -14,4 +14,5 @@ public interface MicrobeService {
     void saveMicrobe(MicrobeNewReqDTO microbeNewReqDTO);
     void updateMicrobe(MicrobeUpdateReqDTO microbeUpdateReqDTO);
     void deleteMicrobe(Long microbeId);
+    void expireMicrobe(Long microbeId);
 }
