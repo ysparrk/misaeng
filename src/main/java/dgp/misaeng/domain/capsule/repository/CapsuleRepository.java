@@ -17,4 +17,10 @@ public interface CapsuleRepository extends JpaRepository<Capsule, Long> {
             "AND d.isDeleted = false " +
             "AND m.survive = true")
     List<Capsule> findAllBySerialNum(@Param("serialNum") String serialNum);
+
+    @Query("SELECT c FROM Capsule c " +
+            "WHERE c.microbe.microbeId = :microbeId " +
+            "AND c.microbe.isDeleted = false " +
+            "AND c.microbe.survive = true")
+    List<Capsule> findAllByMicrobeId(@Param("microbeId") Long microbeId);
 }
