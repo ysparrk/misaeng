@@ -28,7 +28,6 @@ public class CapsuleHistory {
     private Integer useCnt;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "capsule_id", nullable = false)
     private Capsule capsule;
 
     @CreationTimestamp

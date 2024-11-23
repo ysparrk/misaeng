@@ -1,11 +1,47 @@
 package dgp.misaeng.domain.microbe.controller;
 
+import dgp.misaeng.domain.microbe.dto.request.MicrobeEnvironmentReqDTO;
+import dgp.misaeng.domain.microbe.dto.request.MicrobeRecordReqDTO;
+import dgp.misaeng.domain.microbe.service.MicrobeService;
+import dgp.misaeng.global.dto.ResponseDTO;
+import dgp.misaeng.global.service.RedisService;
 import lombok.RequiredArgsConstructor;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 @RequestMapping("/microbes")
 @RestController
 @RequiredArgsConstructor
 public class MicrobeController {
+
+    private final MicrobeService microbeService;
+    private final RedisService redisService;
+
+    @PostMapping("/evironments")
+    public ResponseEntity<ResponseDTO> saveEnvironment(
+            @RequestBody MicrobeEnvironmentReqDTO microbeEnvironmentReqDTO) {
+
+        redisService.saveEnvironmentData(microbeEnvironmentReqDTO);
+
+        return ResponseEntity.status(HttpStatus.OK)
+                .body(ResponseDTO.builder()
+                        .message("환경 데이터 저장 성공")
+                        .build());
+    }
+
+    @PostMapping("/records")
+    public ResponseEntity<ResponseDTO> saveFoodWithImage(
+            @RequestPart("microbeReqDTO") MicrobeRecordReqDTO microbeRecordReqDTO,
+            @RequestPart(value = "image", required = false) MultipartFile image) {
+
+        microbeService.saveRecord(microbeRecordReqDTO, image);
+
+        return ResponseEntity.status(HttpStatus.OK)
+                .body(ResponseDTO.builder()
+                        .message("현재 미생물 상태 저장 성공")
+                        .build());
+    }
+
 }

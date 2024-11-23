@@ -1,9 +1,9 @@
-package dgp.misaeng.domain.food.entity;
+package dgp.misaeng.domain.microbe.entity;
 
 import dgp.misaeng.domain.device.entity.Device;
+import dgp.misaeng.global.util.enums.MicrobeSoilCondition;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
-import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import org.hibernate.annotations.CreationTimestamp;
@@ -14,17 +14,17 @@ import org.hibernate.annotations.Where;
 import java.time.LocalDateTime;
 
 @Entity
-@Table(name = "food")
+@Table(name = "microbe_record")
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Getter
-@SQLDelete(sql = "UPDATE food SET deleted_at = now() WHERE food_id = ?")
+@SQLDelete(sql = "UPDATE microbe_record SET deleted_at = now() WHERE microbe_record_id = ?")
 @Where(clause = "is_deleted = false")
-public class Food {
+public class MicrobeRecord {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "food_id", updatable = false)
-    private Long foodId;
+    @Column(name = "microbe_record_id", updatable = false)
+    private Long microbeRecordId;
 
     @Column(name = "food_category", columnDefinition = "JSON")
     private String foodCategory;
@@ -35,12 +35,15 @@ public class Food {
     @Column(name = "weight")
     private float weight;
 
+    @Enumerated(EnumType.STRING)
+    @Column(name = "microbe_soil_ondition")
+    private MicrobeSoilCondition microbeSoilCondition;
+
     @Column(name = "imgUrl", nullable = false)
     private String imgUrl;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "device_id", nullable = false)
-    private Device device;
+    private Microbe microbe;
 
     @CreationTimestamp
     @Column(name = "created_at", nullable = false)
@@ -50,15 +53,4 @@ public class Food {
     @Column(name = "modified_at", nullable = false)
     private LocalDateTime modifiedAt;
 
-    @Builder
-    public Food(Long foodId, String foodCategory, String rgbStat, float weight, String imgUrl, Device device, LocalDateTime createdAt, LocalDateTime modifiedAt) {
-        this.foodId = foodId;
-        this.foodCategory = foodCategory;
-        this.rgbStat = rgbStat;
-        this.weight = weight;
-        this.imgUrl = imgUrl;
-        this.device = device;
-        this.createdAt = createdAt;
-        this.modifiedAt = modifiedAt;
-    }
 }

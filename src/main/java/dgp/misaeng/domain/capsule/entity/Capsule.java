@@ -30,7 +30,6 @@ public class Capsule {
     private CapsuleType capsuleType;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "microbe_id", nullable = false)
     private Microbe microbe;
 
     @Builder
@@ -39,5 +38,9 @@ public class Capsule {
         this.stock = stock;
         this.capsuleType = capsuleType;
         this.microbe = microbe;
+    }
+
+    public void setStock(Integer stock) {
+        this.stock = stock;
     }
 }
