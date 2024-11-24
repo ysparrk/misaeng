@@ -142,7 +142,7 @@ public class MicrobeController {
                         .build());
     }
 
-    @GetMapping
+    @GetMapping("/details")
     public ResponseEntity<ResponseDTO> getMicrobesYearMonth(
             @RequestParam LocalDate localDate,
             @RequestBody MicrobeReqDTO microbeReqDTO
