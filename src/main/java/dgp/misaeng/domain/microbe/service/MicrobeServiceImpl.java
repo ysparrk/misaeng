@@ -6,8 +6,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import dgp.misaeng.domain.device.entity.Device;
 import dgp.misaeng.domain.device.repository.DeviceRepository;
-import dgp.misaeng.domain.microbe.dto.reponse.MicrobeEnvironmentResDTO;
-import dgp.misaeng.domain.microbe.dto.reponse.MicrobeInfoResDTO;
+import dgp.misaeng.domain.microbe.dto.reponse.*;
 import dgp.misaeng.domain.microbe.dto.request.MicrobeNewReqDTO;
 import dgp.misaeng.domain.microbe.dto.request.MicrobeRecordReqDTO;
 import dgp.misaeng.domain.microbe.dto.request.MicrobeUpdateReqDTO;
@@ -24,11 +23,14 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.LocalTime;
+import java.time.YearMonth;
+import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeParseException;
 import java.time.temporal.ChronoUnit;
-import java.util.Arrays;
-import java.util.Comparator;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -205,6 +207,54 @@ public class MicrobeServiceImpl implements MicrobeService {
         microbe.setSurvive(false);
     }
 
+    @Override
+    public List<MicrobeYearMonthResDTO> getYearMonth(Long microbeId, YearMonth yearMonth) {
+
+        LocalDate startDate = yearMonth.atDay(1);
+        LocalDate endDate = yearMonth.atEndOfMonth();
+
+        List<MicrobeYearMonthResDTO> result = new ArrayList<>();
+
+        for (LocalDate date = startDate; !date.isAfter(endDate); date = date.plusDays(1)) {
+
+            List<String> dailyData = redisService.getMicrobeDataForDate(microbeId, date);
+
+            // 금지 음식 체크
+            boolean isForbidden = dailyData.stream()
+                    .anyMatch(record -> extractFoodCategories(record).stream()
+                            .anyMatch(this::isForbiddenCategory));
+
+            // 자리 비움 체크
+            boolean isEmpty = dailyData.stream()
+                    .allMatch(this::isEmptyRecord);
+
+            if (isForbidden) {
+                result.add(new MicrobeYearMonthResDTO(date, CalendarState.FORBIDDEN));
+            } else if (isEmpty) {
+                result.add(new MicrobeYearMonthResDTO(date, CalendarState.EMPTY));
+            }
+        }
+
+        return result;
+    }
+
+    @Override
+    public MicrobeDateResDTO getDateDetails(Long microbeId, LocalDate localDate) {
+        // Redis에서 해당 날짜의 데이터 가져오기
+        List<String> microbeData = redisService.getMicrobeDataForDate(microbeId, localDate);
+
+        // 데이터 변환 및 DTO 생성
+        List<MicrobeDetailResDTO> detailList = microbeData.stream()
+                .map(this::mapToMicrobeDetailResDTO)
+                .collect(Collectors.toList());
+
+        // MicrobeDateResDTO 생성
+        return MicrobeDateResDTO.builder()
+                .date(localDate)
+                .detailList(detailList)
+                .build();
+    }
+
     // 온도 상태 계산
     private EnvironmentState determineTemperatureState(float temperature) {
         if (temperature >= 20 && temperature <= 40) {
@@ -291,5 +341,68 @@ public class MicrobeServiceImpl implements MicrobeService {
 
     private MicrobeMood determineMicrobeMood(MicrobeMessage microbeMessage) {
         return microbeMessage == MicrobeMessage.GOOD ? MicrobeMood.SMILE : MicrobeMood.BAD;
+    }
+
+    private List<String> extractFoodCategories(String recordJson) {
+        try {
+            JsonNode recordNode = objectMapper.readTree(recordJson);
+            return objectMapper.convertValue(
+                    recordNode.get("food_category"), new TypeReference<List<String>>() {}
+            );
+        } catch (JsonProcessingException e) {
+            throw new CustomException(ErrorCode.JSON_PROCESSING_ERROR) {
+                @Override
+                public ErrorCode getErrorCode() {
+                    return super.getErrorCode();
+                }
+            };
+        }
+    }
+
+    private boolean isEmptyRecord(String recordJson) {
+        try {
+            JsonNode recordNode = objectMapper.readTree(recordJson);
+            return recordNode.get("is_empty").asBoolean();
+        } catch (JsonProcessingException e) {
+            throw new CustomException(ErrorCode.JSON_PROCESSING_ERROR) {
+                @Override
+                public ErrorCode getErrorCode() {
+                    return super.getErrorCode();
+                }
+            };
+        }
+    }
+
+    private MicrobeDetailResDTO mapToMicrobeDetailResDTO(String recordJson) {
+        try {
+            JsonNode recordNode = objectMapper.readTree(recordJson);
+
+            // 데이터 추출
+            String createdAt = recordNode.get("created_at").asText();
+            LocalTime time = LocalDateTime.parse(createdAt).toLocalTime(); // hh:mm만 추출
+            List<String> foodCategories = objectMapper.convertValue(
+                    recordNode.get("food_category"), new TypeReference<List<String>>() {}
+            );
+            float weight = (float) recordNode.get("weight").asDouble();
+            String imgUrl = recordNode.get("img_url").asText();
+            boolean isForbidden = foodCategories.stream().anyMatch(this::isForbiddenCategory);
+
+            // CalendarState 결정
+            CalendarState calendarState = isForbidden
+                    ? CalendarState.FORBIDDEN
+                    : CalendarState.COMPLETE;
+
+            return MicrobeDetailResDTO.builder()
+                    .time(time.format(DateTimeFormatter.ofPattern("HH:mm")))
+                    .calendarState(calendarState)
+                    .foodCategory(foodCategories)
+                    .weight(weight)
+                    .imgUrl(imgUrl)
+                    .timestamp(recordNode.get("timestamp").asText())
+                    .build();
+
+        } catch (JsonProcessingException | DateTimeParseException e) {
+            throw new CustomException(ErrorCode.JSON_PROCESSING_ERROR) {};
+        }
     }
 }

@@ -1,7 +1,9 @@
 package dgp.misaeng.domain.microbe.controller;
 
+import dgp.misaeng.domain.microbe.dto.reponse.MicrobeDateResDTO;
 import dgp.misaeng.domain.microbe.dto.reponse.MicrobeEnvironmentResDTO;
 import dgp.misaeng.domain.microbe.dto.reponse.MicrobeInfoResDTO;
+import dgp.misaeng.domain.microbe.dto.reponse.MicrobeYearMonthResDTO;
 import dgp.misaeng.domain.microbe.dto.request.*;
 import dgp.misaeng.domain.microbe.service.MicrobeService;
 import dgp.misaeng.global.dto.ResponseDTO;
@@ -11,6 +13,10 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
+
+import java.time.LocalDate;
+import java.time.YearMonth;
+import java.util.List;
 
 @RequestMapping("/microbes")
 @RestController
@@ -119,6 +125,35 @@ public class MicrobeController {
         return ResponseEntity.status(HttpStatus.OK)
                 .body(ResponseDTO.builder()
                         .message("미생물 만료 성공")
+                        .build());
+    }
+
+    @GetMapping
+    public ResponseEntity<ResponseDTO> getMicrobesYearMonth(
+            @RequestParam YearMonth yearMonth,
+            @RequestBody MicrobeReqDTO microbeReqDTO
+            ) {
+        List<MicrobeYearMonthResDTO> calendar = microbeService.getYearMonth(microbeReqDTO.getMicrobeId(), yearMonth);
+
+        return ResponseEntity.status(HttpStatus.OK)
+                .body(ResponseDTO.builder()
+                        .message("음식물 투여 캘린더 조회 성공")
+                        .data(calendar)
+                        .build());
+    }
+
+    @GetMapping
+    public ResponseEntity<ResponseDTO> getMicrobesYearMonth(
+            @RequestParam LocalDate localDate,
+            @RequestBody MicrobeReqDTO microbeReqDTO
+    ) {
+
+        MicrobeDateResDTO dateDetails = microbeService.getDateDetails(microbeReqDTO.getMicrobeId(), localDate);
+
+        return ResponseEntity.status(HttpStatus.OK)
+                .body(ResponseDTO.builder()
+                        .message("음식물 투여 캘린더 디테일 조회 성공")
+                        .data(dateDetails)
                         .build());
     }
 }

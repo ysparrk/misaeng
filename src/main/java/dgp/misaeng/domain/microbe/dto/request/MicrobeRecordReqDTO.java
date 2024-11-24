@@ -12,6 +12,7 @@ public class MicrobeRecordReqDTO {
     private float weight;
     private String rgbStat;
     private MicrobeSoilCondition microbeSoilCondition;
+    private boolean isEmpty;
 
     MicrobeRecordReqDTO() {}
 }

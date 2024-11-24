@@ -110,7 +110,8 @@ public class RedisService {
         valueBuilder.append("\"img_url\": \"").append(imgUrl != null ? imgUrl : "").append("\", ");
         valueBuilder.append("\"microbe_soil_condition\": \"").append(
                 microbeRecordReqDTO.getMicrobeSoilCondition() != null ? microbeRecordReqDTO.getMicrobeSoilCondition().toString() : ""
-        ).append("\"");
+        ).append("\", ");
+        valueBuilder.append("\"is_empty\": ").append(microbeRecordReqDTO.isEmpty());
         valueBuilder.append("}");
 
         String value = valueBuilder.toString();
@@ -164,6 +165,36 @@ public class RedisService {
             };
         }
         return latestDataSet.iterator().next();
+    }
+
+    public List<String> getMicrobeDataForDate(Long microbeId, LocalDate date) {
+        String key = "microbe:" + microbeId;
+
+        LocalDateTime startOfDay = date.atStartOfDay();
+        LocalDateTime endOfDay = date.atTime(LocalTime.MAX);
+
+        long startTimestamp = startOfDay.atZone(ZoneId.systemDefault()).toInstant().toEpochMilli();
+        long endTimestamp = endOfDay.atZone(ZoneId.systemDefault()).toInstant().toEpochMilli();
+
+        Set<String> dayData = microbeRedis.opsForZSet().rangeByScore(key, startTimestamp, endTimestamp);
+
+        return dayData != null ? new ArrayList<>(dayData) : new ArrayList<>();
+    }
+
+    public List<String> getMicrobeDataDetail(Long microbeId, LocalDate date) {
+        String key = "microbe:" + microbeId;
+
+        // 해당 날짜의 시작 시간과 끝 시간 계산
+        LocalDateTime startOfDay = date.atStartOfDay();
+        LocalDateTime endOfDay = date.atTime(LocalTime.MAX);
+
+        long startTimestamp = startOfDay.atZone(ZoneId.systemDefault()).toInstant().toEpochMilli();
+        long endTimestamp = endOfDay.atZone(ZoneId.systemDefault()).toInstant().toEpochMilli();
+
+        // Redis에서 해당 날짜의 데이터 조회
+        Set<String> dayData = microbeRedis.opsForZSet().rangeByScore(key, startTimestamp, endTimestamp);
+
+        return dayData != null ? new ArrayList<>(dayData) : new ArrayList<>();
     }
 
 }
