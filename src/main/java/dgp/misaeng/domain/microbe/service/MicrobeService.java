@@ -4,6 +4,7 @@ import dgp.misaeng.domain.microbe.dto.reponse.MicrobeDateResDTO;
 import dgp.misaeng.domain.microbe.dto.reponse.MicrobeEnvironmentResDTO;
 import dgp.misaeng.domain.microbe.dto.reponse.MicrobeInfoResDTO;
 import dgp.misaeng.domain.microbe.dto.reponse.MicrobeYearMonthResDTO;
+import dgp.misaeng.domain.microbe.dto.request.MicrobeDetailUpdateReqDTO;
 import dgp.misaeng.domain.microbe.dto.request.MicrobeNewReqDTO;
 import dgp.misaeng.domain.microbe.dto.request.MicrobeRecordReqDTO;
 import dgp.misaeng.domain.microbe.dto.request.MicrobeUpdateReqDTO;
@@ -25,4 +26,5 @@ public interface MicrobeService {
     //달력
     List<MicrobeYearMonthResDTO> getYearMonth(Long microbeId, YearMonth yearMonth);
     MicrobeDateResDTO getDateDetails(Long microbeId, LocalDate localDate);
+    void updateDateDetails(MicrobeDetailUpdateReqDTO microbeDetailUpdateReqDTO);
 }

@@ -143,7 +143,7 @@ public class MicrobeController {
     }
 
     @GetMapping("/details")
-    public ResponseEntity<ResponseDTO> getMicrobesYearMonth(
+    public ResponseEntity<ResponseDTO> getMicrobesDateDetail(
             @RequestParam LocalDate localDate,
             @RequestBody MicrobeReqDTO microbeReqDTO
     ) {
@@ -154,6 +154,18 @@ public class MicrobeController {
                 .body(ResponseDTO.builder()
                         .message("음식물 투여 캘린더 디테일 조회 성공")
                         .data(dateDetails)
+                        .build());
+    }
+
+    @PutMapping("/update-detail")
+    public ResponseEntity<ResponseDTO> updateMicrobesDateDetail(
+        @RequestBody MicrobeDetailUpdateReqDTO microbeDetailUpdateReqDTO
+    ) {
+        microbeService.updateDateDetails(microbeDetailUpdateReqDTO);
+
+        return ResponseEntity.status(HttpStatus.OK)
+                .body(ResponseDTO.builder()
+                        .message("음식물 투여 카테고리 디테일 수정 성공")
                         .build());
     }
 }

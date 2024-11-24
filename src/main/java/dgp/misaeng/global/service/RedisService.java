@@ -197,4 +197,15 @@ public class RedisService {
         return dayData != null ? new ArrayList<>(dayData) : new ArrayList<>();
     }
 
+    public Set<String> getDataByTimestamp(Long microbeId, Long timestamp) {
+        String key = "microbe:" + microbeId;
+
+        return microbeRedis.opsForZSet().rangeByScore(key, timestamp, timestamp);
+    }
+
+    public void updateMicrobeData(String key, Long timestamp, String originalData, String updatedData) {
+        microbeRedis.opsForZSet().remove(key, originalData);
+
+        microbeRedis.opsForZSet().add(key, updatedData, timestamp);
+    }
 }

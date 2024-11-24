@@ -4,9 +4,11 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import dgp.misaeng.domain.device.entity.Device;
 import dgp.misaeng.domain.device.repository.DeviceRepository;
 import dgp.misaeng.domain.microbe.dto.reponse.*;
+import dgp.misaeng.domain.microbe.dto.request.MicrobeDetailUpdateReqDTO;
 import dgp.misaeng.domain.microbe.dto.request.MicrobeNewReqDTO;
 import dgp.misaeng.domain.microbe.dto.request.MicrobeRecordReqDTO;
 import dgp.misaeng.domain.microbe.dto.request.MicrobeUpdateReqDTO;
@@ -253,6 +255,45 @@ public class MicrobeServiceImpl implements MicrobeService {
                 .date(localDate)
                 .detailList(detailList)
                 .build();
+    }
+
+    @Override
+    public void updateDateDetails(MicrobeDetailUpdateReqDTO microbeDetailUpdateReqDTO) {
+
+        Long microbeId = microbeDetailUpdateReqDTO.getMicrobeId();
+        Long timestamp = microbeDetailUpdateReqDTO.getTimestamp();
+
+        String key = "microbe:" + microbeId;
+
+        // Redis에서 데이터 조회
+        Set<String> dataSet = redisService.getDataByTimestamp(microbeId, timestamp);
+        if (dataSet.isEmpty()) {
+            throw new CustomException(ErrorCode.NO_RECORD_FOUND) {
+                @Override
+                public ErrorCode getErrorCode() {
+                    return super.getErrorCode();
+                }
+            };
+        }
+
+        // JSON 데이터 파싱 및 수정
+        String originalData = dataSet.iterator().next(); // 해당 timestamp 데이터
+        try {
+            JsonNode originalNode = objectMapper.readTree(originalData);
+
+            ((ObjectNode) originalNode).put("food_category", objectMapper.writeValueAsString(microbeDetailUpdateReqDTO.getFoodCategory()));
+
+            String updatedData = originalNode.toString();
+            redisService.updateMicrobeData(key, timestamp, originalData, updatedData);
+
+        } catch (JsonProcessingException e) {
+            throw new CustomException(ErrorCode.JSON_PROCESSING_ERROR) {
+                @Override
+                public ErrorCode getErrorCode() {
+                    return super.getErrorCode();
+                }
+            };
+        }
     }
 
     // 온도 상태 계산

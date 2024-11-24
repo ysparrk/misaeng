@@ -43,6 +43,7 @@ public enum ErrorCode {
     // 미생물 Microbe
     NO_SUCH_MICROBE(HttpStatus.BAD_REQUEST, "MI001", "현재 미생물이 기기 안에 존재하지 않습니다."),
     NO_ENVIRONMENT_DATA(HttpStatus.NOT_FOUND, "MI002", "현재 환경데이터가 없습니다."),
+    NO_RECORD_FOUND(HttpStatus.BAD_REQUEST, "MI003", "현재 저장된 미생물 데이터가 없습니다."),
 
     // 캡슐 Capsule
     CAPSULE_NOT_FOUND(HttpStatus.NOT_FOUND, "CP001", "해당하는 캡슐 타입이 없습니다."),
