@@ -4,6 +4,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import dgp.misaeng.domain.device.entity.Device;
 import dgp.misaeng.domain.device.repository.DeviceRepository;
@@ -285,13 +286,13 @@ public class MicrobeServiceImpl implements MicrobeService {
     @Override
     public void updateDateDetails(MicrobeDetailUpdateReqDTO microbeDetailUpdateReqDTO) {
 
+        // 데이터 조회
         Long microbeId = microbeDetailUpdateReqDTO.getMicrobeId();
         Long timestamp = microbeDetailUpdateReqDTO.getTimestamp();
-
         String key = "microbe:" + microbeId;
 
-        // Redis에서 데이터 조회
         Set<String> dataSet = redisService.getDataByTimestamp(microbeId, timestamp);
+
         if (dataSet.isEmpty()) {
             throw new CustomException(ErrorCode.NO_RECORD_FOUND) {
                 @Override
@@ -301,14 +302,15 @@ public class MicrobeServiceImpl implements MicrobeService {
             };
         }
 
-        // JSON 데이터 파싱 및 수정
-        String originalData = dataSet.iterator().next(); // 해당 timestamp 데이터
+        //업데이트
+        String originalData = dataSet.iterator().next();
         try {
-            JsonNode originalNode = objectMapper.readTree(originalData);
+            JsonNode originalNode = parseJson(originalData);
 
-            ((ObjectNode) originalNode).put("food_category", objectMapper.writeValueAsString(microbeDetailUpdateReqDTO.getFoodCategory()));
+            ArrayNode updatedFoodCategory = objectMapper.valueToTree(microbeDetailUpdateReqDTO.getFoodCategory());
+            ((ObjectNode) originalNode).set("food_category", updatedFoodCategory);
 
-            String updatedData = originalNode.toString();
+            String updatedData = objectMapper.writeValueAsString(originalNode);
             redisService.updateMicrobeData(key, timestamp, originalData, updatedData);
 
         } catch (JsonProcessingException e) {
