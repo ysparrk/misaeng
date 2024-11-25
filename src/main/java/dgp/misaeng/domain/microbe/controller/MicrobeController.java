@@ -34,7 +34,7 @@ public class MicrobeController {
 
         return ResponseEntity.status(HttpStatus.OK)
                 .body(ResponseDTO.builder()
-                        .message("환경 데이터 저장 성공")
+                        .message("온/습도 데이터 저장 성공")
                         .build());
     }
 

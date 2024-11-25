@@ -32,6 +32,8 @@ import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
 import java.time.temporal.ChronoUnit;
 import java.util.*;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 @Service
@@ -64,13 +66,23 @@ public class MicrobeServiceImpl implements MicrobeService {
     public MicrobeEnvironmentResDTO getEnvironment(Long microbeId) {
         String latestData = redisService.getLatestEnvironmentData(microbeId);
 
-        //json 파싱
+        // 데이터가 null이면 기본값으로 채운 DTO 반환
+        if (latestData == null) {
+            return MicrobeEnvironmentResDTO.builder()
+                    .temperature(0)
+                    .humidity(0)
+                    .temperatureState(null)
+                    .humidityState(null)
+                    .build();
+        }
+
+        // JSON 파싱
         try {
             JsonNode jsonNode = objectMapper.readTree(latestData);
-            float temperature = (float) jsonNode.get("temperature").asDouble();
-            float humidity = (float) jsonNode.get("humidity").asDouble();
+            Float temperature = (float) jsonNode.get("temperature").asDouble();
+            Float humidity = (float) jsonNode.get("humidity").asDouble();
 
-            //상태 계산
+            // 상태 계산
             EnvironmentState temperatureState = determineTemperatureState(temperature);
             EnvironmentState humidityState = determineHumidityState(humidity);
 
@@ -93,45 +105,55 @@ public class MicrobeServiceImpl implements MicrobeService {
     @Override
     public MicrobeInfoResDTO getMicrobeInfo(Long microbeId) {
 
-        List<String> todayData = redisService.getTodayMicrobeData(microbeId);
+        List<String> todayData = redisService.getTodayMicrobeData(microbeId);  //총 weight 계산용
         String latestData = redisService.getLatestData(microbeId);
 
-        // JSON 파싱
-        JsonNode latestDataJson = parseJson(latestData);
+        // 기본값
+        MicrobeColor microbeColor = MicrobeColor.BLUE;
+        MicrobeMood microbeMood = MicrobeMood.SMILE;
+        MicrobeMessage microbeMessage = MicrobeMessage.GOOD;
+        FoodWeightState foodWeightState = FoodWeightState.GOOD;
+        float totalWeightToday = 0f;
+        boolean forbidden = false;
 
-        float latestWeight = (float) latestDataJson.get("weight").asDouble();
-        String rgbStat = latestDataJson.get("rgb_stat").asText();
-        List<String> foodCategories = objectMapper.convertValue(
-                latestDataJson.get("food_category"),
-                new TypeReference<>() {}
-        );
+        //비어있지 않다면
+        if (latestData != null && !latestData.isEmpty()) {
+            // JSON 파싱
+            JsonNode latestDataJson = parseJson(latestData);
+
+            String rgbStat = latestDataJson.get("rgb_stat").asText();
+            List<String> foodCategories = objectMapper.convertValue(
+                    latestDataJson.get("food_category"),
+                    new TypeReference<>() {}
+            );
+
+            // MicrobeColor 계산
+            microbeColor = determineClosestColor(rgbStat);
+
+            // 오늘 날짜의 총 음식 무게 계산
+            totalWeightToday = calculateTotalWeightToday(todayData);
+
+            // FoodWeightState 계산
+            foodWeightState = (totalWeightToday > 5.0f) ? FoodWeightState.FULL : FoodWeightState.GOOD;
+
+            // Forbidden 상태 계산
+            forbidden = foodCategories.stream()
+                    .anyMatch(this::isForbiddenCategory);
+
+            // MicrobeMessage 계산
+            microbeMessage = determineMicrobeMessage(microbeId, foodWeightState, forbidden);
+
+        }
 
         // 미생물 기본 정보 조회
         Microbe microbe = microbeRepository.findById(microbeId)
                 .orElseThrow(() -> new CustomException(ErrorCode.NO_SUCH_MICROBE) {});
 
-        // MicrobeColor 계산
-        MicrobeColor microbeColor = determineClosestColor(rgbStat);
+        long bDay = ChronoUnit.DAYS.between(microbe.getCreatedAt().toLocalDate(), LocalDate.now()) + 1;
 
-        // 오늘 날짜의 총 음식 무게 계산
-        float totalWeightToday = calculateTotalWeightToday(todayData);
+        microbeMood = determineMicrobeMood(microbeMessage);
 
-        FoodWeightState foodWeightState = (totalWeightToday > 5.0f) ? FoodWeightState.FULL : FoodWeightState.GOOD;
 
-        // Forbidden 상태 계산
-        boolean forbidden = foodCategories.stream()
-                .anyMatch(this::isForbiddenCategory);
-
-        // MicrobeMessage 계산
-        MicrobeMessage microbeMessage = determineMicrobeMessage(microbeId, foodWeightState, forbidden);
-
-        // bDay 계산
-        long bDay = ChronoUnit.DAYS.between(microbe.getCreatedAt().toLocalDate(), LocalDate.now());
-
-        // MicrobeMood 계산
-        MicrobeMood microbeMood = determineMicrobeMood(microbeMessage);
-
-        // 결과 DTO 생성
         return MicrobeInfoResDTO.builder()
                 .microbeId(microbeId)
                 .microbeName(microbe.getMicrobeName())
@@ -242,15 +264,12 @@ public class MicrobeServiceImpl implements MicrobeService {
 
     @Override
     public MicrobeDateResDTO getDateDetails(Long microbeId, LocalDate localDate) {
-        // Redis에서 해당 날짜의 데이터 가져오기
         List<String> microbeData = redisService.getMicrobeDataForDate(microbeId, localDate);
 
-        // 데이터 변환 및 DTO 생성
         List<MicrobeDetailResDTO> detailList = microbeData.stream()
                 .map(this::mapToMicrobeDetailResDTO)
                 .collect(Collectors.toList());
 
-        // MicrobeDateResDTO 생성
         return MicrobeDateResDTO.builder()
                 .date(localDate)
                 .detailList(detailList)
@@ -320,7 +339,9 @@ public class MicrobeServiceImpl implements MicrobeService {
 
     private JsonNode parseJson(String data) {
         try {
-            return objectMapper.readTree(data);
+            // JSON 표준에 맞지 않는 배열 값 처리
+            String sanitizedData = sanitizeJson(data);
+            return objectMapper.readTree(sanitizedData);
         } catch (JsonProcessingException e) {
             throw new CustomException(ErrorCode.JSON_PROCESSING_ERROR) {
                 @Override
@@ -331,17 +352,35 @@ public class MicrobeServiceImpl implements MicrobeService {
         }
     }
 
+    private String sanitizeJson(String data) {
+        // 정규식을 사용하여 JSON 데이터를 변환
+        Pattern pattern = Pattern.compile("\\[([A-Z_]+(?:,\\s?[A-Z_]+)*)\\]");
+        Matcher matcher = pattern.matcher(data);
+        StringBuffer result = new StringBuffer();
+
+        while (matcher.find()) {
+            String matchedGroup = matcher.group(1);
+            String sanitizedGroup = matchedGroup.replaceAll("([A-Z_]+)", "\"$1\""); // "KIMCHI", "RICE", "FRIED"
+            matcher.appendReplacement(result, "[" + sanitizedGroup + "]");
+        }
+        matcher.appendTail(result);
+
+        return result.toString();
+    }
+
     private float calculateTotalWeightToday(List<String> todayData) {
-        return todayData.stream()
-                .map(data -> {
-                    try {
-                        JsonNode jsonNode = objectMapper.readTree(data);
-                        return (float) jsonNode.get("weight").asDouble();
-                    } catch (JsonProcessingException e) {
-                        return 0f; // JSON 파싱 실패 시 기본값 반환
-                    }
-                })
-                .reduce(0f, Float::sum);
+        float totalWeightToday = 0f;
+
+        if (todayData != null && !todayData.isEmpty()) {
+            for (String data : todayData) {
+                JsonNode jsonNode = parseJson(data);
+                float weight = (float) jsonNode.get("weight").asDouble();
+                System.out.println("무게 " + weight);
+                totalWeightToday += weight;
+            }
+        }
+
+        return Math.round(totalWeightToday * 10) / 10.0f;
     }
 
     private MicrobeColor determineClosestColor(String rgbStat) {
