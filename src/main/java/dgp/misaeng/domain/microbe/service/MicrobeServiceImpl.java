@@ -375,7 +375,6 @@ public class MicrobeServiceImpl implements MicrobeService {
             for (String data : todayData) {
                 JsonNode jsonNode = parseJson(data);
                 float weight = (float) jsonNode.get("weight").asDouble();
-                System.out.println("무게 " + weight);
                 totalWeightToday += weight;
             }
         }
@@ -425,11 +424,17 @@ public class MicrobeServiceImpl implements MicrobeService {
 
     private List<String> extractFoodCategories(String recordJson) {
         try {
-            JsonNode recordNode = objectMapper.readTree(recordJson);
-            return objectMapper.convertValue(
-                    recordNode.get("food_category"), new TypeReference<List<String>>() {}
-            );
-        } catch (JsonProcessingException e) {
+            JsonNode recordNode = parseJson(recordJson);
+
+            if (recordNode.has("food_category") && recordNode.get("food_category").isArray()) {
+                return objectMapper.convertValue(
+                        recordNode.get("food_category"), new TypeReference<List<String>>() {}
+                );
+            } else {
+                return Collections.emptyList();
+            }
+        } catch (Exception e) {
+            System.err.println("JSON 파싱 실패 - 원본 데이터: " + recordJson);
             throw new CustomException(ErrorCode.JSON_PROCESSING_ERROR) {
                 @Override
                 public ErrorCode getErrorCode() {
@@ -441,9 +446,14 @@ public class MicrobeServiceImpl implements MicrobeService {
 
     private boolean isEmptyRecord(String recordJson) {
         try {
-            JsonNode recordNode = objectMapper.readTree(recordJson);
-            return recordNode.get("is_empty").asBoolean();
-        } catch (JsonProcessingException e) {
+            JsonNode recordNode = parseJson(recordJson);
+
+            if (recordNode.has("is_empty") && !recordNode.get("is_empty").isNull()) {
+                return recordNode.get("is_empty").asBoolean();
+            }
+
+            return false;
+        } catch (Exception e) {
             throw new CustomException(ErrorCode.JSON_PROCESSING_ERROR) {
                 @Override
                 public ErrorCode getErrorCode() {

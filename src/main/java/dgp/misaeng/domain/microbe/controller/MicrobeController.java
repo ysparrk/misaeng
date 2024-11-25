@@ -59,7 +59,7 @@ public class MicrobeController {
 
         return ResponseEntity.status(HttpStatus.OK)
                 .body(ResponseDTO.builder()
-                        .message("현재 환경 정보 조회 성공")
+                        .message("현재 온/습도 정보 조회 성공")
                         .data(environment)
                         .build());
     }
@@ -128,12 +128,12 @@ public class MicrobeController {
                         .build());
     }
 
-    @GetMapping
+    @GetMapping("/{microbeId}")
     public ResponseEntity<ResponseDTO> getMicrobesYearMonth(
-            @RequestParam YearMonth yearMonth,
-            @RequestBody MicrobeReqDTO microbeReqDTO
+            @PathVariable Long microbeId,
+            @RequestParam YearMonth yearMonth
             ) {
-        List<MicrobeYearMonthResDTO> calendar = microbeService.getYearMonth(microbeReqDTO.getMicrobeId(), yearMonth);
+        List<MicrobeYearMonthResDTO> calendar = microbeService.getYearMonth(microbeId, yearMonth);
 
         return ResponseEntity.status(HttpStatus.OK)
                 .body(ResponseDTO.builder()
