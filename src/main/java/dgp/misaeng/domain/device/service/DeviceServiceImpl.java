@@ -47,6 +47,7 @@ public class DeviceServiceImpl implements DeviceService {
                 .serialNum(deviceReqDTO.getSerialNum())
                 .deviceType(deviceReqDTO.getDeviceType())
                 .deviceName(deviceReqDTO.getDeviceName())
+                .isDeleted(false)
                 .build();
 
         deviceRepository.save(device);
@@ -54,6 +55,8 @@ public class DeviceServiceImpl implements DeviceService {
         Microbe microbe = Microbe.builder()
                 .device(device)
                 .microbeName(deviceReqDTO.getMicrobeName())
+                .survive(true)
+                .isDeleted(false)
                 .build();
 
         microbeRepository.save(microbe);
@@ -63,6 +66,8 @@ public class DeviceServiceImpl implements DeviceService {
     public List<DeviceResDTO> getDevices(Long memberId) {
         // 1. 해당 member의 모든 device 조회
         List<Device> devices = deviceRepository.findAllByMemberId(memberId);
+
+        System.out.println("디바이스 사이즈" + devices.size());
 
         // 2. 각 device에 연결된 microbe 조회 및 DTO 생성
         return devices.stream()

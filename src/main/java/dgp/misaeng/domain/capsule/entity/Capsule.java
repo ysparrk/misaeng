@@ -20,7 +20,7 @@ public class Capsule {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "capsule_id", updatable = false)
+    @Column(name = "id", updatable = false)
     private Long capsuleId;
 
     @Column(name = "stock", nullable = false)
@@ -30,6 +30,7 @@ public class Capsule {
     private CapsuleType capsuleType;
 
     @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "microbe_id", nullable = false)
     private Microbe microbe;
 
     @Builder
