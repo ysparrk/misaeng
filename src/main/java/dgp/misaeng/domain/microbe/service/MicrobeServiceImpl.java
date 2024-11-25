@@ -214,7 +214,10 @@ public class MicrobeServiceImpl implements MicrobeService {
                     }
                 });
 
-        microbeRepository.delete(microbe);
+        microbe.setDeleted(true);
+        microbe.setSurvive(false);
+
+        microbeRepository.save(microbe);
     }
 
     @Transactional
@@ -465,16 +468,20 @@ public class MicrobeServiceImpl implements MicrobeService {
 
     private MicrobeDetailResDTO mapToMicrobeDetailResDTO(String recordJson) {
         try {
-            JsonNode recordNode = objectMapper.readTree(recordJson);
+            // JSON 데이터 정리 및 파싱
+            JsonNode recordNode = parseJson(recordJson);
 
-            // 데이터 추출
-            String createdAt = recordNode.get("created_at").asText();
-            LocalTime time = LocalDateTime.parse(createdAt).toLocalTime(); // hh:mm만 추출
-            List<String> foodCategories = objectMapper.convertValue(
-                    recordNode.get("food_category"), new TypeReference<List<String>>() {}
-            );
-            float weight = (float) recordNode.get("weight").asDouble();
-            String imgUrl = recordNode.get("img_url").asText();
+            String createdAt = recordNode.has("created_at") ? recordNode.get("created_at").asText() : null;
+            LocalTime time = (createdAt != null)
+                    ? LocalDateTime.parse(createdAt, DateTimeFormatter.ISO_DATE_TIME).toLocalTime() // hh:mm 추출
+                    : null;
+
+            List<String> foodCategories = recordNode.has("food_category") && !recordNode.get("food_category").isNull()
+                    ? objectMapper.convertValue(recordNode.get("food_category"), new TypeReference<List<String>>() {})
+                    : Collections.emptyList();
+
+            float weight = recordNode.has("weight") ? (float) recordNode.get("weight").asDouble() : 0f;
+            String imgUrl = recordNode.has("img_url") ? recordNode.get("img_url").asText() : "";
             boolean isForbidden = foodCategories.stream().anyMatch(this::isForbiddenCategory);
 
             // CalendarState 결정
@@ -483,16 +490,21 @@ public class MicrobeServiceImpl implements MicrobeService {
                     : CalendarState.COMPLETE;
 
             return MicrobeDetailResDTO.builder()
-                    .time(time.format(DateTimeFormatter.ofPattern("HH:mm")))
+                    .time(time != null ? time.format(DateTimeFormatter.ofPattern("HH:mm")) : null)
                     .calendarState(calendarState)
                     .foodCategory(foodCategories)
                     .weight(weight)
                     .imgUrl(imgUrl)
-                    .timestamp(recordNode.get("timestamp").asText())
+                    .timestamp(recordNode.has("timestamp") ? recordNode.get("timestamp").asText() : "")
                     .build();
 
-        } catch (JsonProcessingException | DateTimeParseException e) {
-            throw new CustomException(ErrorCode.JSON_PROCESSING_ERROR) {};
+        } catch (Exception e) {
+            throw new CustomException(ErrorCode.JSON_PROCESSING_ERROR) {
+                @Override
+                public ErrorCode getErrorCode() {
+                    return super.getErrorCode();
+                }
+            };
         }
     }
 }

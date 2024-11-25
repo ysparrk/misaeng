@@ -2,9 +2,11 @@ package dgp.misaeng.domain.microbe.dto.reponse;
 
 import dgp.misaeng.global.util.enums.CalendarState;
 import lombok.Builder;
+import lombok.Getter;
 
 import java.util.List;
 
+@Getter
 public class MicrobeDetailResDTO {
     private String time;
     private CalendarState calendarState;

@@ -142,13 +142,13 @@ public class MicrobeController {
                         .build());
     }
 
-    @GetMapping("/details")
+    @GetMapping("/detail/{microbeId}")
     public ResponseEntity<ResponseDTO> getMicrobesDateDetail(
             @RequestParam LocalDate localDate,
-            @RequestBody MicrobeReqDTO microbeReqDTO
+            @PathVariable Long microbeId
     ) {
 
-        MicrobeDateResDTO dateDetails = microbeService.getDateDetails(microbeReqDTO.getMicrobeId(), localDate);
+        MicrobeDateResDTO dateDetails = microbeService.getDateDetails(microbeId, localDate);
 
         return ResponseEntity.status(HttpStatus.OK)
                 .body(ResponseDTO.builder()
