@@ -11,8 +11,14 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.LocalTime;
+import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
 
@@ -56,7 +62,7 @@ public class RedisService {
 
 
     public void saveEnvironmentData(MicrobeEnvironmentReqDTO microbeEnvironmentReqDTO) {
-        Long microbeId = microbeRepository.findMicrobeIdBySerialNum(microbeEnvironmentReqDTO.getSericalNum()).orElseThrow(() -> new CustomException(ErrorCode.NO_SUCH_MICROBE) {
+        Long microbeId = microbeRepository.findMicrobeIdBySerialNum(microbeEnvironmentReqDTO.getSerialNum()).orElseThrow(() -> new CustomException(ErrorCode.NO_SUCH_MICROBE) {
             @Override
             public ErrorCode getErrorCode() {
                 return super.getErrorCode();
@@ -104,7 +110,8 @@ public class RedisService {
         valueBuilder.append("\"img_url\": \"").append(imgUrl != null ? imgUrl : "").append("\", ");
         valueBuilder.append("\"microbe_soil_condition\": \"").append(
                 microbeRecordReqDTO.getMicrobeSoilCondition() != null ? microbeRecordReqDTO.getMicrobeSoilCondition().toString() : ""
-        ).append("\"");
+        ).append("\", ");
+        valueBuilder.append("\"is_empty\": ").append(microbeRecordReqDTO.isEmpty());
         valueBuilder.append("}");
 
         String value = valueBuilder.toString();
@@ -112,4 +119,93 @@ public class RedisService {
         microbeRedis.opsForZSet().add(key, value, timestamp);
     }
 
+    public String getLatestEnvironmentData(Long microbeId) {
+        String key = "environment:" + microbeId;
+
+        Set<String> latestData = environmentRedis.opsForZSet().reverseRange(key, 0, 0);
+
+        if (latestData == null || latestData.isEmpty()) {
+            throw new CustomException(ErrorCode.NO_ENVIRONMENT_DATA) {
+                @Override
+                public ErrorCode getErrorCode() {
+                    return super.getErrorCode();
+                }
+            };
+        }
+
+        return latestData.iterator().next();
+    }
+
+    public List<String> getTodayMicrobeData(Long microbeId) {
+        String key = "microbe:" + microbeId;
+
+        LocalDate today = LocalDate.now();
+        LocalDateTime startOfDay = today.atStartOfDay();
+        LocalDateTime endOfDay = today.atTime(LocalTime.MAX);
+
+        long startTimestamp = startOfDay.atZone(ZoneId.systemDefault()).toInstant().toEpochMilli();
+        long endTimestamp = endOfDay.atZone(ZoneId.systemDefault()).toInstant().toEpochMilli();
+
+        Set<String> todayData = microbeRedis.opsForZSet().rangeByScore(key, startTimestamp, endTimestamp);
+
+        return todayData != null ? new ArrayList<>(todayData) : new ArrayList<>();
+    }
+
+    public String getLatestData(Long microbeId) {
+        String key = "microbe:" + microbeId;
+
+        // Redis ZSET에서 가장 최신 데이터 조회
+        Set<String> latestDataSet = microbeRedis.opsForZSet().reverseRange(key, 0, 0);
+        if (latestDataSet == null || latestDataSet.isEmpty()) {
+            throw new CustomException(ErrorCode.NO_ENVIRONMENT_DATA) {
+                @Override
+                public ErrorCode getErrorCode() {
+                    return super.getErrorCode();
+                }
+            };
+        }
+        return latestDataSet.iterator().next();
+    }
+
+    public List<String> getMicrobeDataForDate(Long microbeId, LocalDate date) {
+        String key = "microbe:" + microbeId;
+
+        LocalDateTime startOfDay = date.atStartOfDay();
+        LocalDateTime endOfDay = date.atTime(LocalTime.MAX);
+
+        long startTimestamp = startOfDay.atZone(ZoneId.systemDefault()).toInstant().toEpochMilli();
+        long endTimestamp = endOfDay.atZone(ZoneId.systemDefault()).toInstant().toEpochMilli();
+
+        Set<String> dayData = microbeRedis.opsForZSet().rangeByScore(key, startTimestamp, endTimestamp);
+
+        return dayData != null ? new ArrayList<>(dayData) : new ArrayList<>();
+    }
+
+    public List<String> getMicrobeDataDetail(Long microbeId, LocalDate date) {
+        String key = "microbe:" + microbeId;
+
+        // 해당 날짜의 시작 시간과 끝 시간 계산
+        LocalDateTime startOfDay = date.atStartOfDay();
+        LocalDateTime endOfDay = date.atTime(LocalTime.MAX);
+
+        long startTimestamp = startOfDay.atZone(ZoneId.systemDefault()).toInstant().toEpochMilli();
+        long endTimestamp = endOfDay.atZone(ZoneId.systemDefault()).toInstant().toEpochMilli();
+
+        // Redis에서 해당 날짜의 데이터 조회
+        Set<String> dayData = microbeRedis.opsForZSet().rangeByScore(key, startTimestamp, endTimestamp);
+
+        return dayData != null ? new ArrayList<>(dayData) : new ArrayList<>();
+    }
+
+    public Set<String> getDataByTimestamp(Long microbeId, Long timestamp) {
+        String key = "microbe:" + microbeId;
+
+        return microbeRedis.opsForZSet().rangeByScore(key, timestamp, timestamp);
+    }
+
+    public void updateMicrobeData(String key, Long timestamp, String originalData, String updatedData) {
+        microbeRedis.opsForZSet().remove(key, originalData);
+
+        microbeRedis.opsForZSet().add(key, updatedData, timestamp);
+    }
 }

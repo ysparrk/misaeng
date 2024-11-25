@@ -59,4 +59,12 @@ public class Microbe {
         this.isDeleted = isDeleted;
         this.deletedAt = deletedAt;
     }
+
+    public void setMicrobeName(String microbeName) {
+        this.microbeName = microbeName;
+    }
+
+    public void setSurvive(Boolean survive) {
+        this.survive = survive;
+    }
 }

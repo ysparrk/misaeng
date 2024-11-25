@@ -1,6 +1,6 @@
 package dgp.misaeng.global.util.enums;
 
-public enum MicrobeState {
+public enum MicrobeMessage {
     GOOD("건강"),
     BAD("안좋음"),
     FULL("음식 과다"),
@@ -8,7 +8,7 @@ public enum MicrobeState {
 
     private String message;
 
-    MicrobeState(String message) {
+    MicrobeMessage(String message) {
         this.message = message;
     }
 }

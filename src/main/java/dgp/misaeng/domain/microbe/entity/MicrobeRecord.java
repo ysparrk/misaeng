@@ -39,8 +39,11 @@ public class MicrobeRecord {
     @Column(name = "microbe_soil_ondition")
     private MicrobeSoilCondition microbeSoilCondition;
 
-    @Column(name = "imgUrl", nullable = false)
+    @Column(name = "img_url", nullable = false)
     private String imgUrl;
+
+    @Column(name = "is_empty", nullable = false)
+    private boolean isEmpty;
 
     @ManyToOne(fetch = FetchType.LAZY)
     private Microbe microbe;

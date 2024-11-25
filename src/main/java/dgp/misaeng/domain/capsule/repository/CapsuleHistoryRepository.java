@@ -1,25 +1,17 @@
 package dgp.misaeng.domain.capsule.repository;
 
-import dgp.misaeng.domain.capsule.entity.Capsule;
 import dgp.misaeng.domain.capsule.entity.CapsuleHistory;
-import dgp.misaeng.global.util.enums.CapsuleType;
 import io.lettuce.core.dynamic.annotation.Param;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 
-import java.util.Optional;
+import java.util.List;
 
 public interface CapsuleHistoryRepository extends JpaRepository<CapsuleHistory, Long> {
-    @Query("SELECT c " +
-            "FROM Capsule c " +
-            "JOIN c.microbe m " +
-            "JOIN m.device d " +
-            "WHERE d.serialNum = :serialNum " +
-            "AND c.capsuleType = :capsuleType " +
-            "AND m.isDeleted = false " +
-            "AND d.isDeleted = false " +
-            "AND m.survive = true")
-    Optional<Capsule> findBySerialNumAndCapsuleType(
-            @Param("serialNum") String serialNum,
-            @Param("capsuleType") CapsuleType capsuleType);
+    @Query("SELECT ch FROM CapsuleHistory ch " +
+            "JOIN ch.capsule c " +
+            "WHERE c.microbe.microbeId = :microbeId " +
+            "ORDER BY ch.createdAt DESC")
+    List<CapsuleHistory> findRecentThreeByMicrobeId(@Param("microbeId") Long microbeId, Pageable pageable);
 }

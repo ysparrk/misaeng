@@ -1,5 +1,6 @@
 package dgp.misaeng.domain.device.controller;
 
+import dgp.misaeng.domain.device.dto.reponse.DeviceResDTO;
 import dgp.misaeng.domain.device.dto.request.DeviceReqDTO;
 import dgp.misaeng.domain.device.service.DeviceService;
 import dgp.misaeng.global.dto.ResponseDTO;
@@ -10,6 +11,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
+
 @RequestMapping("/devices")
 @RestController
 @RequiredArgsConstructor
@@ -19,7 +22,7 @@ public class DeviceController {
 
     @PostMapping
     public ResponseEntity<ResponseDTO> save(
-            @AuthenticationPrincipal Long memberId,
+            @PathVariable Long memberId,
             @Valid @RequestBody DeviceReqDTO deviceReqDTO
             ) {
 
@@ -31,5 +34,17 @@ public class DeviceController {
                         .build());
     }
 
+    @GetMapping
+    public ResponseEntity<ResponseDTO> getDevices(
+            @PathVariable Long memberId
+    ) {
+        List<DeviceResDTO> devices = deviceService.getDevices(memberId);
 
+        return ResponseEntity.status(HttpStatus.OK)
+                .body(ResponseDTO.builder()
+                        .message("기기 정보 조회 성공")
+                        .data(devices)
+                        .build());
+
+    }
 }
