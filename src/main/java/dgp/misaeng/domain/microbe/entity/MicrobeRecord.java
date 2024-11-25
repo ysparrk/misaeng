@@ -23,7 +23,7 @@ public class MicrobeRecord {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "microbe_record_id", updatable = false)
+    @Column(name = "id", updatable = false)
     private Long microbeRecordId;
 
     @Column(name = "food_category", columnDefinition = "JSON")
@@ -46,6 +46,7 @@ public class MicrobeRecord {
     private boolean isEmpty;
 
     @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "microbe_id", nullable = false)
     private Microbe microbe;
 
     @CreationTimestamp

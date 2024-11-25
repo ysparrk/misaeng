@@ -20,7 +20,7 @@ import java.time.LocalDateTime;
 public class Microbe {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "microbe_id", updatable = false)
+    @Column(name = "id", updatable = false)
     private Long microbeId;
 
     @Column(name = "microbe_name", length = 30, nullable = false)
@@ -31,6 +31,7 @@ public class Microbe {
     private Boolean survive;
 
     @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "device_id", nullable = false)
     private Device device;
 
     @CreationTimestamp
@@ -48,11 +49,11 @@ public class Microbe {
     @Column(name = "deleted_at")
     private LocalDateTime deletedAt;
 
-
     @Builder
-    public Microbe(Long microbeId, String microbeName, Device device, LocalDateTime createdAt, LocalDateTime modifiedAt, Boolean isDeleted, LocalDateTime deletedAt) {
+    public Microbe(Long microbeId, String microbeName, Boolean survive, Device device, LocalDateTime createdAt, LocalDateTime modifiedAt, Boolean isDeleted, LocalDateTime deletedAt) {
         this.microbeId = microbeId;
         this.microbeName = microbeName;
+        this.survive = survive;
         this.device = device;
         this.createdAt = createdAt;
         this.modifiedAt = modifiedAt;

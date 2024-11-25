@@ -20,10 +20,10 @@ public class DeviceController {
 
     private final DeviceService deviceService;
 
-    @PostMapping
+    @PostMapping("/{memberId}")
     public ResponseEntity<ResponseDTO> save(
             @PathVariable Long memberId,
-            @Valid @RequestBody DeviceReqDTO deviceReqDTO
+            @RequestBody DeviceReqDTO deviceReqDTO
             ) {
 
         deviceService.saveDevice(memberId, deviceReqDTO);
@@ -34,7 +34,7 @@ public class DeviceController {
                         .build());
     }
 
-    @GetMapping
+    @GetMapping("/{memberId}")
     public ResponseEntity<ResponseDTO> getDevices(
             @PathVariable Long memberId
     ) {

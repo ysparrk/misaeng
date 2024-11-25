@@ -21,13 +21,14 @@ public class CapsuleHistory {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "capsule_history_id", updatable = false)
+    @Column(name = "id", updatable = false)
     private Long capsuleHistoryId;
 
     @Column(name = "use_cnt", nullable = false)
     private Integer useCnt;
 
     @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "capsule_id", nullable = false)
     private Capsule capsule;
 
     @CreationTimestamp
