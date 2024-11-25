@@ -26,7 +26,7 @@ public class MicrobeController {
     private final MicrobeService microbeService;
     private final RedisService redisService;
 
-    @PostMapping("/evironments")
+    @PostMapping("/environments")
     public ResponseEntity<ResponseDTO> saveEnvironment(
             @RequestBody MicrobeEnvironmentReqDTO microbeEnvironmentReqDTO) {
 
