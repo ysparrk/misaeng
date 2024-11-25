@@ -38,9 +38,22 @@ public enum ErrorCode {
     NO_FILE_EXTENSION(HttpStatus.BAD_REQUEST, "S003", "파일 확장자가 존재하지 않습니다."),
     INVALID_FILE_EXTENSION(HttpStatus.BAD_REQUEST, "S004", "유효하지 않은 파일 확장자입니다."),
     PUT_OBJECT_EXCEPTION(HttpStatus.INTERNAL_SERVER_ERROR, "S005", "S3에 파일 업로드 중 예외가 발생했습니다."),
-    IO_EXCEPTION_ON_IMAGE_DELETE(HttpStatus.INTERNAL_SERVER_ERROR, "S006", "이미지 삭제 중 IO 예외가 발생했습니다.");
+    IO_EXCEPTION_ON_IMAGE_DELETE(HttpStatus.INTERNAL_SERVER_ERROR, "S006", "이미지 삭제 중 IO 예외가 발생했습니다."),
 
+    // 미생물 Microbe
+    NO_SUCH_MICROBE(HttpStatus.BAD_REQUEST, "MI001", "현재 미생물이 기기 안에 존재하지 않습니다."),
+    NO_ENVIRONMENT_DATA(HttpStatus.NOT_FOUND, "MI002", "현재 환경데이터가 없습니다."),
+    NO_RECORD_FOUND(HttpStatus.BAD_REQUEST, "MI003", "현재 저장된 미생물 데이터가 없습니다."),
 
+    // 캡슐 Capsule
+    CAPSULE_NOT_FOUND(HttpStatus.NOT_FOUND, "CP001", "해당하는 캡슐 타입이 없습니다."),
+    INSUFFICIENT_STOCK(HttpStatus.NOT_FOUND, "CP002", "캡슐의 재고가 부족합니다."),
+
+    // 디바이스 Device
+    NO_SUCH_DEVICE(HttpStatus.BAD_REQUEST, "D001", "해당하는 기기가 없습니다."),
+
+    // 상태 State
+    JSON_PROCESSING_ERROR(HttpStatus.BAD_REQUEST, "", "JSON 처리 중 오류가 발생했습니다.");
 
     private final HttpStatus status;
     private final String code;
