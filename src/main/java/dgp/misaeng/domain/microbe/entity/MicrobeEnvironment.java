@@ -20,7 +20,7 @@ import java.time.LocalDateTime;
 public class MicrobeEnvironment {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "microbe_environment_id", updatable = false)
+    @Column(name = "id", updatable = false)
     private Long microbeEnvironmentId;
 
     @Column(name = "temperature")
@@ -30,6 +30,7 @@ public class MicrobeEnvironment {
     private float humidity;
 
     @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "microbe_id", nullable = false)
     private Microbe microbe;
 
     @CreationTimestamp

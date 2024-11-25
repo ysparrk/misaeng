@@ -20,7 +20,7 @@ import java.time.LocalDateTime;
 public class Device {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "device_id", updatable = false)
+    @Column(name = "id", updatable = false)
     private Long deviceId;
 
     @Column(name = "serial_num", length = 30, nullable = false)
@@ -33,6 +33,7 @@ public class Device {
     private String deviceName;
 
     @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "member_id", nullable = false)
     private Member member;
 
     @CreationTimestamp
