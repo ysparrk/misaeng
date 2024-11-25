@@ -183,6 +183,8 @@ public class MicrobeServiceImpl implements MicrobeService {
         Microbe microbe = Microbe.builder()
                 .device(device)
                 .microbeName(microbeNewReqDTO.getMicrobeName())
+                .survive(true)
+                .isDeleted(false)
                 .build();
 
         microbeRepository.save(microbe);
@@ -232,6 +234,7 @@ public class MicrobeServiceImpl implements MicrobeService {
                 });
 
         microbe.setSurvive(false);
+        microbeRepository.save(microbe);
     }
 
     @Override
