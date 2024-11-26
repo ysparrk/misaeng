@@ -125,12 +125,7 @@ public class RedisService {
         Set<String> latestData = environmentRedis.opsForZSet().reverseRange(key, 0, 0);
 
         if (latestData == null || latestData.isEmpty()) {
-            throw new CustomException(ErrorCode.NO_ENVIRONMENT_DATA) {
-                @Override
-                public ErrorCode getErrorCode() {
-                    return super.getErrorCode();
-                }
-            };
+            return null;
         }
 
         return latestData.iterator().next();
@@ -154,15 +149,9 @@ public class RedisService {
     public String getLatestData(Long microbeId) {
         String key = "microbe:" + microbeId;
 
-        // Redis ZSET에서 가장 최신 데이터 조회
         Set<String> latestDataSet = microbeRedis.opsForZSet().reverseRange(key, 0, 0);
         if (latestDataSet == null || latestDataSet.isEmpty()) {
-            throw new CustomException(ErrorCode.NO_ENVIRONMENT_DATA) {
-                @Override
-                public ErrorCode getErrorCode() {
-                    return super.getErrorCode();
-                }
-            };
+            return null;
         }
         return latestDataSet.iterator().next();
     }

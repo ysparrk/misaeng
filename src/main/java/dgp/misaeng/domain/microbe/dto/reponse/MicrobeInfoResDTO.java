@@ -5,7 +5,9 @@ import dgp.misaeng.global.util.enums.MicrobeColor;
 import dgp.misaeng.global.util.enums.MicrobeMood;
 import dgp.misaeng.global.util.enums.MicrobeMessage;
 import lombok.Builder;
+import lombok.Getter;
 
+@Getter
 public class MicrobeInfoResDTO {
     private Long microbeId;
     private String microbeName;

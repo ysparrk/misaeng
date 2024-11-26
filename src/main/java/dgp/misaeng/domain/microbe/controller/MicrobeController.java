@@ -34,7 +34,7 @@ public class MicrobeController {
 
         return ResponseEntity.status(HttpStatus.OK)
                 .body(ResponseDTO.builder()
-                        .message("환경 데이터 저장 성공")
+                        .message("온/습도 데이터 저장 성공")
                         .build());
     }
 
@@ -59,7 +59,7 @@ public class MicrobeController {
 
         return ResponseEntity.status(HttpStatus.OK)
                 .body(ResponseDTO.builder()
-                        .message("현재 환경 정보 조회 성공")
+                        .message("현재 온/습도 정보 조회 성공")
                         .data(environment)
                         .build());
     }
@@ -128,12 +128,12 @@ public class MicrobeController {
                         .build());
     }
 
-    @GetMapping
+    @GetMapping("/{microbeId}")
     public ResponseEntity<ResponseDTO> getMicrobesYearMonth(
-            @RequestParam YearMonth yearMonth,
-            @RequestBody MicrobeReqDTO microbeReqDTO
+            @PathVariable Long microbeId,
+            @RequestParam YearMonth yearMonth
             ) {
-        List<MicrobeYearMonthResDTO> calendar = microbeService.getYearMonth(microbeReqDTO.getMicrobeId(), yearMonth);
+        List<MicrobeYearMonthResDTO> calendar = microbeService.getYearMonth(microbeId, yearMonth);
 
         return ResponseEntity.status(HttpStatus.OK)
                 .body(ResponseDTO.builder()
@@ -142,13 +142,13 @@ public class MicrobeController {
                         .build());
     }
 
-    @GetMapping("/details")
+    @GetMapping("/detail/{microbeId}")
     public ResponseEntity<ResponseDTO> getMicrobesDateDetail(
             @RequestParam LocalDate localDate,
-            @RequestBody MicrobeReqDTO microbeReqDTO
+            @PathVariable Long microbeId
     ) {
 
-        MicrobeDateResDTO dateDetails = microbeService.getDateDetails(microbeReqDTO.getMicrobeId(), localDate);
+        MicrobeDateResDTO dateDetails = microbeService.getDateDetails(microbeId, localDate);
 
         return ResponseEntity.status(HttpStatus.OK)
                 .body(ResponseDTO.builder()

@@ -4,11 +4,9 @@ import dgp.misaeng.domain.device.dto.reponse.DeviceResDTO;
 import dgp.misaeng.domain.device.dto.request.DeviceReqDTO;
 import dgp.misaeng.domain.device.service.DeviceService;
 import dgp.misaeng.global.dto.ResponseDTO;
-import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -42,7 +40,7 @@ public class DeviceController {
 
         return ResponseEntity.status(HttpStatus.OK)
                 .body(ResponseDTO.builder()
-                        .message("기기 정보 조회 성공")
+                        .message("기기 및 미생물 목록 조회 성공")
                         .data(devices)
                         .build());
 
