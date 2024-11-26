@@ -15,7 +15,7 @@ import java.time.LocalDateTime;
 @Table(name = "microbe")
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Getter
-@SQLDelete(sql = "UPDATE microbe SET deleted_at = now() WHERE microbe_id = ?")
+@SQLDelete(sql = "UPDATE microbe SET deleted_at = now() WHERE id = ?")
 @Where(clause = "is_deleted = false")
 public class Microbe {
     @Id
@@ -67,5 +67,10 @@ public class Microbe {
 
     public void setSurvive(Boolean survive) {
         this.survive = survive;
+    }
+
+    public void setDeleted(Boolean isDeleted) {
+        this.isDeleted = isDeleted;
+        this.deletedAt = LocalDateTime.now();
     }
 }

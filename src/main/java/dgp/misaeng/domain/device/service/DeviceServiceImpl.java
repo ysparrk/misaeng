@@ -16,6 +16,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -66,27 +67,35 @@ public class DeviceServiceImpl implements DeviceService {
     public List<DeviceResDTO> getDevices(Long memberId) {
         // 1. 해당 member의 모든 device 조회
         List<Device> devices = deviceRepository.findAllByMemberId(memberId);
+        System.out.println("디바이스 사이즈: " + devices.size());
 
-        System.out.println("디바이스 사이즈" + devices.size());
+        // 결과 리스트 생성
+        List<DeviceResDTO> deviceResDTOList = new ArrayList<>();
 
         // 2. 각 device에 연결된 microbe 조회 및 DTO 생성
-        return devices.stream()
-                .map(device -> {
-                    MicrobeInfoResDTO microbeInfo = null;
+        for (Device device : devices) {
+            System.out.println("디바이스 이름: " + device.getDeviceName());
+            MicrobeInfoResDTO microbeInfo = null;
 
-                    // device에 연결된 microbe 조회
-                    Optional<Microbe> microbeOpt = microbeRepository.findByDeviceId(device.getDeviceId());
-                    if (microbeOpt.isPresent()) {
-                        Microbe microbe = microbeOpt.get();
-                        microbeInfo = microbeService.getMicrobeInfo(microbe.getMicrobeId());
-                    }
+            // device에 연결된 microbe 조회
+            Optional<Microbe> microbeOpt = microbeRepository.findByDeviceId(device.getDeviceId());
+            if (microbeOpt.isPresent()) {
+                Microbe microbe = microbeOpt.get();
+                System.out.println(microbe.getMicrobeName());
+                microbeInfo = microbeService.getMicrobeInfo(microbe.getMicrobeId());
+            }
+            System.out.println("info 출력"+microbeInfo.getMicrobeName() + microbeInfo.getMicrobeMessage());
+            // DeviceResDTO 생성 및 리스트에 추가
+            DeviceResDTO deviceResDTO = DeviceResDTO.builder()
+                    .deviceId(device.getDeviceId())
+                    .deviceName(device.getDeviceName())
+                    .microbeInfo(microbeInfo)
+                    .build();
 
-                    return DeviceResDTO.builder()
-                            .deviceId(device.getDeviceId())
-                            .deviceName(device.getDeviceName())
-                            .microbeInfo(microbeInfo)
-                            .build();
-                })
-                .collect(Collectors.toList());
+            deviceResDTOList.add(deviceResDTO);
+            System.out.println("디바이스 조회" + deviceResDTO.getDeviceName() + " " + deviceResDTO.getMicrobeInfo().getMicrobeName());
+        }
+
+        return deviceResDTOList;
     }
 }
