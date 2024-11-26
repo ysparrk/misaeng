@@ -30,7 +30,6 @@ import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.YearMonth;
 import java.time.format.DateTimeFormatter;
-import java.time.format.DateTimeParseException;
 import java.time.temporal.ChronoUnit;
 import java.util.*;
 import java.util.regex.Matcher;
@@ -120,7 +119,11 @@ public class MicrobeServiceImpl implements MicrobeService {
         //비어있지 않다면
         if (latestData != null && !latestData.isEmpty()) {
             // JSON 파싱
+            System.out.println("data " + latestData);
+
+
             JsonNode latestDataJson = parseJson(latestData);
+
 
             String rgbStat = latestDataJson.get("rgb_stat").asText();
             List<String> foodCategories = objectMapper.convertValue(
@@ -260,9 +263,9 @@ public class MicrobeServiceImpl implements MicrobeService {
                     .allMatch(this::isEmptyRecord);
 
             if (isForbidden) {
-                result.add(new MicrobeYearMonthResDTO(date, CalendarState.FORBIDDEN));
+                result.add(new MicrobeYearMonthResDTO(date, MicrobeState.FORBIDDEN));
             } else if (isEmpty) {
-                result.add(new MicrobeYearMonthResDTO(date, CalendarState.EMPTY));
+                result.add(new MicrobeYearMonthResDTO(date, MicrobeState.EMPTY));
             }
         }
 
@@ -360,16 +363,24 @@ public class MicrobeServiceImpl implements MicrobeService {
         }
     }
 
+
     private String sanitizeJson(String data) {
         // 정규식을 사용하여 JSON 데이터를 변환
-        Pattern pattern = Pattern.compile("\\[([A-Z_]+(?:,\\s?[A-Z_]+)*)\\]");
+        Pattern pattern = Pattern.compile("\\[([A-Za-z_\\s]+(?:,\\s?[A-Za-z_\\s]+)*)\\]");
         Matcher matcher = pattern.matcher(data);
         StringBuffer result = new StringBuffer();
 
         while (matcher.find()) {
             String matchedGroup = matcher.group(1);
-            String sanitizedGroup = matchedGroup.replaceAll("([A-Z_]+)", "\"$1\""); // "KIMCHI", "RICE", "FRIED"
-            matcher.appendReplacement(result, "[" + sanitizedGroup + "]");
+
+            // 빈 배열일 경우 null로 변환
+            if (matchedGroup == null || matchedGroup.trim().isEmpty()) {
+                matcher.appendReplacement(result, "null");
+            } else {
+                // 배열의 내용을 문자열로 감싸기
+                String sanitizedGroup = matchedGroup.replaceAll("([A-Za-z_\\s]+)", "\"$1\"").replaceAll(",\\s+", "\", \"");
+                matcher.appendReplacement(result, "[" + sanitizedGroup + "]");
+            }
         }
         matcher.appendTail(result);
 
@@ -490,9 +501,9 @@ public class MicrobeServiceImpl implements MicrobeService {
             boolean isForbidden = foodCategories.stream().anyMatch(this::isForbiddenCategory);
 
             // CalendarState 결정
-            CalendarState calendarState = isForbidden
-                    ? CalendarState.FORBIDDEN
-                    : CalendarState.COMPLETE;
+            MicrobeState calendarState = isForbidden
+                    ? MicrobeState.FORBIDDEN
+                    : MicrobeState.COMPLETE;
 
             return MicrobeDetailResDTO.builder()
                     .time(time != null ? time.format(DateTimeFormatter.ofPattern("HH:mm")) : null)
