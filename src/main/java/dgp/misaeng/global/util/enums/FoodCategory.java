@@ -6,7 +6,7 @@ public enum FoodCategory {
     STIR_FRIED("볶음/구이 및 조림류"),
     FRIED("튀김 및 전/부침류"),
     SEAFOOD("해산물 요리"),
-    SALAD("샐러드 및 채소류"),
+    SALAD("샐러드 및 과채류"),
     BREAD("빵 및 곡류"),
     DAIRY("유제품/계란 및 디저트"),
     OTHER("기타 음식 및 간식"),
