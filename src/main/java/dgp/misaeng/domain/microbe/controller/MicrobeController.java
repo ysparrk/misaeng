@@ -51,11 +51,12 @@ public class MicrobeController {
                         .build());
     }
 
-    @GetMapping("/environments")
+    @GetMapping("/environments/{microbeId}")
     public ResponseEntity<ResponseDTO> getEnvironment(
-            @RequestBody MicrobeReqDTO microbeReqDTO) {
+            @PathVariable Long microbeId
+    ) {
 
-        MicrobeEnvironmentResDTO environment = microbeService.getEnvironment(microbeReqDTO.getMicrobeId());
+        MicrobeEnvironmentResDTO environment = microbeService.getEnvironment(microbeId);
 
         return ResponseEntity.status(HttpStatus.OK)
                 .body(ResponseDTO.builder()
@@ -64,11 +65,12 @@ public class MicrobeController {
                         .build());
     }
 
-    @GetMapping("/info")
+    @GetMapping("/info/{microbeId}")
     public ResponseEntity<ResponseDTO> getMicrobeInfo(
-            @RequestBody MicrobeReqDTO microbeReqDTO) {
+            @PathVariable Long microbeId
+    ) {
 
-        MicrobeInfoResDTO microbeInfo = microbeService.getMicrobeInfo(microbeReqDTO.getMicrobeId());
+        MicrobeInfoResDTO microbeInfo = microbeService.getMicrobeInfo(microbeId);
 
         return ResponseEntity.status(HttpStatus.OK)
                 .body(ResponseDTO.builder()
