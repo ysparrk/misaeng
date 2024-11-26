@@ -51,6 +51,7 @@ public enum ErrorCode {
 
     // 디바이스 Device
     NO_SUCH_DEVICE(HttpStatus.BAD_REQUEST, "D001", "해당하는 기기가 없습니다."),
+    NO_SUCH_DEVICE_STATE(HttpStatus.BAD_REQUEST, "D002", "해당하는 기기제어 상태가 없습니다."),
 
     // 상태 State
     JSON_PROCESSING_ERROR(HttpStatus.BAD_REQUEST, "", "JSON 처리 중 오류가 발생했습니다.");
