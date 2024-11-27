@@ -2,7 +2,6 @@ package dgp.misaeng.domain.device.service;
 
 import dgp.misaeng.domain.device.dto.reponse.DeviceResDTO;
 import dgp.misaeng.domain.device.dto.reponse.DeviceStateResDTO;
-import dgp.misaeng.domain.device.dto.request.DeviceModeReqDTO;
 import dgp.misaeng.domain.device.dto.request.DeviceReqDTO;
 import dgp.misaeng.domain.device.entity.Device;
 import dgp.misaeng.domain.device.entity.DeviceState;
@@ -103,6 +102,7 @@ public class DeviceServiceImpl implements DeviceService {
             DeviceResDTO deviceResDTO = DeviceResDTO.builder()
                     .deviceId(device.getDeviceId())
                     .deviceName(device.getDeviceName())
+                    .serialNum(device.getSerialNum())
                     .microbeInfo(microbeInfo)
                     .build();
 

@@ -4,6 +4,7 @@ spring:
   jackson:
     serialization:
       fail-on-empty-beans: false
+    time-zone: Asia/Seoul
   jpa:
     hibernate:
       ddl-auto: update
