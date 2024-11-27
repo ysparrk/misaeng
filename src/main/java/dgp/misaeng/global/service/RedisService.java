@@ -11,10 +11,7 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 
-import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.time.LocalTime;
-import java.time.ZoneId;
+import java.time.*;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
@@ -73,9 +70,10 @@ public class RedisService {
         String key = "environment:" + microbeId;
 
         // 현재 시간 생성
-        long timestamp = System.currentTimeMillis(); // 밀리초 단위 타임스탬프
-        LocalDateTime createdAt = LocalDateTime.now();
-        String createdAtString = createdAt.format(DateTimeFormatter.ISO_LOCAL_DATE_TIME);
+        ZonedDateTime nowKST = ZonedDateTime.now(ZoneId.of("Asia/Seoul"));
+        String createdAtString = nowKST.format(DateTimeFormatter.ISO_LOCAL_DATE_TIME);
+        long timestamp = nowKST.toInstant().toEpochMilli();
+
 
         String value = String.format(
                 "{\"temperature\": %.2f, \"humidity\": %.2f, \"humidity\": %.2f, \"created_at\": \"%s\", \"timestamp\": %d}",
@@ -94,9 +92,9 @@ public class RedisService {
         String key = "microbe:" + microbeId;
 
         // 현재 현재시간 생성
-        long timestamp = System.currentTimeMillis();
-        LocalDateTime createdAt = LocalDateTime.now();
-        String createdAtString = createdAt.format(DateTimeFormatter.ISO_LOCAL_DATE_TIME);
+        ZonedDateTime nowKST = ZonedDateTime.now(ZoneId.of("Asia/Seoul"));
+        String createdAtString = nowKST.format(DateTimeFormatter.ISO_LOCAL_DATE_TIME);
+        long timestamp = nowKST.toInstant().toEpochMilli();
 
         // 저장할 데이터 생성 (JSON 문자열 형태로)
         StringBuilder valueBuilder = new StringBuilder();
