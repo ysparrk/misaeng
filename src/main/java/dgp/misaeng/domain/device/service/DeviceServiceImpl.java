@@ -68,14 +68,7 @@ public class DeviceServiceImpl implements DeviceService {
 
         deviceStateRepository.save(deviceState);
 
-        Microbe microbe = Microbe.builder()
-                .device(device)
-                .microbeName(deviceReqDTO.getMicrobeName())
-                .survive(true)
-                .isDeleted(false)
-                .build();
-
-        microbeRepository.save(microbe);
+        microbeService.saveMicrobe(device.getDeviceId(), deviceReqDTO.getMicrobeName());
     }
 
     @Override

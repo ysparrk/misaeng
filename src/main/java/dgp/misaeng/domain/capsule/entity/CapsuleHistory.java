@@ -31,15 +31,19 @@ public class CapsuleHistory {
     @JoinColumn(name = "capsule_id", nullable = false)
     private Capsule capsule;
 
+    @Column(name = "use_state")
+    private boolean useState;  //true -> 사용 / false -> 재고채움
+
     @CreationTimestamp
     @Column(name = "created_at", nullable = false)
     private LocalDateTime createdAt;
 
     @Builder
-    public CapsuleHistory(Long capsuleHistoryId, Integer useCnt, Capsule capsule, LocalDateTime createdAt) {
+    public CapsuleHistory(Long capsuleHistoryId, Integer useCnt, Capsule capsule, boolean useState, LocalDateTime createdAt) {
         this.capsuleHistoryId = capsuleHistoryId;
         this.useCnt = useCnt;
         this.capsule = capsule;
+        this.useState = useState;
         this.createdAt = createdAt;
     }
 }

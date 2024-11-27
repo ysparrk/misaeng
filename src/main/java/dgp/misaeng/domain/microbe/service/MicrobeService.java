@@ -15,7 +15,7 @@ public interface MicrobeService {
     void saveRecord(MicrobeRecordReqDTO microbeRecordReqDTO, MultipartFile image);
     MicrobeEnvironmentResDTO getEnvironment(Long microbeId);
     MicrobeInfoResDTO getMicrobeInfo(Long microbeId);
-    void saveMicrobe(MicrobeNewReqDTO microbeNewReqDTO);
+    void saveMicrobe(Long deviceId, String microbeName);
     void updateMicrobe(MicrobeUpdateReqDTO microbeUpdateReqDTO);
     void deleteMicrobe(Long microbeId);
     void expireMicrobe(Long microbeId);
