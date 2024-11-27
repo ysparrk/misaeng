@@ -29,6 +29,9 @@ public class MicrobeEnvironment {
     @Column(name = "humidity")
     private float humidity;
 
+    @Column(name = "gas")
+    private float gas;
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "microbe_id", nullable = false)
     private Microbe microbe;

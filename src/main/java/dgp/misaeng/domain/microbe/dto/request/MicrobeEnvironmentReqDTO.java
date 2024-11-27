@@ -7,6 +7,7 @@ public class MicrobeEnvironmentReqDTO {
     private String serialNum;
     private float temperature;
     private float humidity;
+    private float gas;
 
     public MicrobeEnvironmentReqDTO() {}
 }
