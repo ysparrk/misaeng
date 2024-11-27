@@ -14,7 +14,6 @@ import org.hibernate.annotations.*;
 @Table(name = "device_state")
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Getter
-@Where(clause = "is_deleted = false")
 public class DeviceState {
 
     @Id
