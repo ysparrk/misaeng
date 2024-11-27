@@ -36,6 +36,9 @@ public class Device {
     @JoinColumn(name = "member_id", nullable = false)
     private Member member;
 
+    @OneToOne(mappedBy = "device", fetch = FetchType.LAZY)
+    private DeviceState deviceState;
+
     @CreationTimestamp
     @Column(name = "created_at", nullable = false)
     private LocalDateTime createdAt;

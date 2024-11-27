@@ -29,12 +29,12 @@ public class CapsuleController {
                         .build());
     }
 
-    @GetMapping("/{microbeId}")
+    @GetMapping("/{serialNum}")
     public ResponseEntity<ResponseDTO> getCapsule(
-            @PathVariable Long microbeId
+            @PathVariable String serialNum
     ) {
 
-        CapsuleResDTO capsuleInfoList = capsuleService.getCapsule(microbeId);
+        CapsuleResDTO capsuleInfoList = capsuleService.getCapsule(serialNum);
 
         return ResponseEntity.status(HttpStatus.OK)
                 .body(ResponseDTO.builder()
