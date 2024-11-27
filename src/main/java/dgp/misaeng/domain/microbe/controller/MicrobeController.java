@@ -80,7 +80,7 @@ public class MicrobeController {
     public ResponseEntity<ResponseDTO> saveNewMicrobe(
             @RequestBody MicrobeNewReqDTO microbeNewReqDTO
     ) {
-        microbeService.saveMicrobe(microbeNewReqDTO);
+        microbeService.saveMicrobe(microbeNewReqDTO.getDeviceId(), microbeNewReqDTO.getMicrobeName());
 
         return ResponseEntity.status(HttpStatus.OK)
                 .body(ResponseDTO.builder()

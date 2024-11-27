@@ -26,6 +26,7 @@ public class Capsule {
     @Column(name = "stock", nullable = false)
     private Integer stock;
 
+    @Enumerated(EnumType.STRING)
     @Column(name = "capsule_type", nullable = false)
     private CapsuleType capsuleType;
 
