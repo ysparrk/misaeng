@@ -4,15 +4,15 @@ import dgp.misaeng.global.util.enums.CapsuleType;
 import lombok.Builder;
 import lombok.Getter;
 
-import java.time.LocalDateTime;
+import java.time.LocalDate;
 
 @Getter
 public class RecentThreeHistoryDTO {
     private CapsuleType capsuleType;
-    private LocalDateTime date;
+    private LocalDate date;
 
     @Builder
-    public RecentThreeHistoryDTO(CapsuleType capsuleType, LocalDateTime date) {
+    public RecentThreeHistoryDTO(CapsuleType capsuleType, LocalDate date) {
         this.capsuleType = capsuleType;
         this.date = date;
     }
