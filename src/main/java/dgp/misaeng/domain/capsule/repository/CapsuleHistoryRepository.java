@@ -12,6 +12,7 @@ public interface CapsuleHistoryRepository extends JpaRepository<CapsuleHistory, 
     @Query("SELECT ch FROM CapsuleHistory ch " +
             "JOIN ch.capsule c " +
             "WHERE c.microbe.microbeId = :microbeId " +
+            "AND ch.useState = true " +
             "ORDER BY ch.createdAt DESC")
     List<CapsuleHistory> findRecentThreeByMicrobeId(@Param("microbeId") Long microbeId, Pageable pageable);
 }

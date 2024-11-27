@@ -16,7 +16,6 @@ import java.time.LocalDateTime;
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Getter
 @SQLDelete(sql = "UPDATE capsule_history SET deleted_at = now() WHERE capsule_history_id = ?")
-@Where(clause = "is_deleted = false")
 public class CapsuleHistory {
 
     @Id

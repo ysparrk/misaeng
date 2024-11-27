@@ -9,6 +9,7 @@ import dgp.misaeng.domain.capsule.entity.Capsule;
 import dgp.misaeng.domain.capsule.entity.CapsuleHistory;
 import dgp.misaeng.domain.capsule.repository.CapsuleHistoryRepository;
 import dgp.misaeng.domain.capsule.repository.CapsuleRepository;
+import dgp.misaeng.domain.microbe.repository.MicrobeRepository;
 import dgp.misaeng.global.exception.CustomException;
 import dgp.misaeng.global.exception.ErrorCode;
 import lombok.RequiredArgsConstructor;
@@ -27,6 +28,7 @@ public class CapsuleServiceImpl implements CapsuleService {
 
     private final CapsuleRepository capsuleRepository;
     private final CapsuleHistoryRepository capsuleHistoryRepository;
+    private final MicrobeRepository microbeRepository;
 
     @Transactional
     @Override
@@ -59,9 +61,9 @@ public class CapsuleServiceImpl implements CapsuleService {
     }
 
     @Override
-    public CapsuleResDTO getCapsule(Long microbeId) {
+    public CapsuleResDTO getCapsule(String serialNum) {
         // 1. 캡슐 잔여량 조회
-        List<CapsuleRemainResDTO> capsuleRemainList = capsuleRepository.findAllByMicrobeId(microbeId).stream()
+        List<CapsuleRemainResDTO> capsuleRemainList = capsuleRepository.findAllBySerialNum(serialNum).stream()
                 .map(capsule -> {
                     return new CapsuleRemainResDTO(
                             capsule.getCapsuleType(),
@@ -71,12 +73,20 @@ public class CapsuleServiceImpl implements CapsuleService {
                 .collect(Collectors.toList());
 
         // 2. 최근 3개의 히스토리 조회
+        Long microbeId = microbeRepository.findMicrobeIdBySerialNum(serialNum).orElseThrow(() -> new CustomException(ErrorCode.NO_SUCH_MICROBE) {
+            @Override
+            public ErrorCode getErrorCode() {
+                return super.getErrorCode();
+            }
+        });
+
+
         Pageable pageable = PageRequest.of(0, 3);
         List<RecentThreeHistoryDTO> recentThreeHistoryList = capsuleHistoryRepository.findRecentThreeByMicrobeId(microbeId, pageable).stream()
                 .map(history -> {
                     return new RecentThreeHistoryDTO(
                             history.getCapsule().getCapsuleType(),
-                            history.getCreatedAt()
+                            history.getCreatedAt().toLocalDate()
                     );
                 })
                 .collect(Collectors.toList());
