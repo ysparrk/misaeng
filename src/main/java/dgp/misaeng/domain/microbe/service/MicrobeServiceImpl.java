@@ -6,6 +6,10 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import dgp.misaeng.domain.capsule.entity.Capsule;
+import dgp.misaeng.domain.capsule.entity.CapsuleHistory;
+import dgp.misaeng.domain.capsule.repository.CapsuleHistoryRepository;
+import dgp.misaeng.domain.capsule.repository.CapsuleRepository;
 import dgp.misaeng.domain.device.entity.Device;
 import dgp.misaeng.domain.device.repository.DeviceRepository;
 import dgp.misaeng.domain.microbe.dto.reponse.*;
@@ -46,6 +50,8 @@ public class MicrobeServiceImpl implements MicrobeService {
     private final RedisService redisService;
     private final ObjectMapper objectMapper;
     private final DeviceRepository deviceRepository;
+    private final CapsuleRepository capsuleRepository;
+    private final CapsuleHistoryRepository capsuleHistoryRepository;
 
     @Override
     public void saveRecord(MicrobeRecordReqDTO microbeRecordReqDTO, MultipartFile image) {
@@ -174,9 +180,9 @@ public class MicrobeServiceImpl implements MicrobeService {
 
     @Transactional
     @Override
-    public void saveMicrobe(MicrobeNewReqDTO microbeNewReqDTO) {
+    public void saveMicrobe(Long deviceId, String microbeName) {
         //새로운 미생물 등록
-        Device device = deviceRepository.findById(microbeNewReqDTO.getDeviceId())
+        Device device = deviceRepository.findById(deviceId)
                 .orElseThrow(() -> new CustomException(ErrorCode.NO_SUCH_DEVICE) {
                     @Override
                     public ErrorCode getErrorCode() {
@@ -186,12 +192,32 @@ public class MicrobeServiceImpl implements MicrobeService {
 
         Microbe microbe = Microbe.builder()
                 .device(device)
-                .microbeName(microbeNewReqDTO.getMicrobeName())
+                .microbeName(microbeName)
                 .survive(true)
                 .isDeleted(false)
                 .build();
 
         microbeRepository.save(microbe);
+
+        //캡슐 초기 재고 생성
+        for (CapsuleType type : CapsuleType.values()) {
+            Capsule capsule = Capsule.builder()
+                    .stock(10)
+                    .capsuleType(type)
+                    .microbe(microbe)
+                    .build();
+
+            Capsule savedCapsule = capsuleRepository.save(capsule);
+
+            CapsuleHistory history = CapsuleHistory.builder()
+                    .useCnt(10)
+                    .capsule(savedCapsule)
+                    .useState(false)
+                    .createdAt(LocalDateTime.now())
+                    .build();
+
+            capsuleHistoryRepository.save(history);
+        }
     }
 
     @Transactional
