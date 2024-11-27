@@ -21,4 +21,11 @@ public interface MicrobeRepository extends JpaRepository<Microbe, Long> {
             "AND m.isDeleted = false " +
             "AND m.survive = true")
     Optional<Microbe> findByDeviceId(@Param("deviceId") Long deviceId);
+
+    @Query("SELECT m FROM Microbe m " +
+            "JOIN m.device d " +
+            "WHERE d.serialNum = :serialNum " +
+            "AND m.isDeleted = false " +
+            "AND m.survive = true")
+    Optional<Microbe> findByDeviceSerialNum(@Param("serialNum") String serialNum);
 }

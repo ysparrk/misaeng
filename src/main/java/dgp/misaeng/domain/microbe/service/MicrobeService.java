@@ -1,9 +1,6 @@
 package dgp.misaeng.domain.microbe.service;
 
-import dgp.misaeng.domain.microbe.dto.reponse.MicrobeDateResDTO;
-import dgp.misaeng.domain.microbe.dto.reponse.MicrobeEnvironmentResDTO;
-import dgp.misaeng.domain.microbe.dto.reponse.MicrobeInfoResDTO;
-import dgp.misaeng.domain.microbe.dto.reponse.MicrobeYearMonthResDTO;
+import dgp.misaeng.domain.microbe.dto.reponse.*;
 import dgp.misaeng.domain.microbe.dto.request.MicrobeDetailUpdateReqDTO;
 import dgp.misaeng.domain.microbe.dto.request.MicrobeNewReqDTO;
 import dgp.misaeng.domain.microbe.dto.request.MicrobeRecordReqDTO;
@@ -27,4 +24,7 @@ public interface MicrobeService {
     List<MicrobeYearMonthResDTO> getYearMonth(Long microbeId, YearMonth yearMonth);
     MicrobeDateResDTO getDateDetails(Long microbeId, LocalDate localDate);
     void updateDateDetails(MicrobeDetailUpdateReqDTO microbeDetailUpdateReqDTO);
+
+    //유저피드백
+    MicrobeFeedbackResDTO getFeedback(String serialNum, LocalDate date);
 }

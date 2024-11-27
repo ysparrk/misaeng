@@ -326,6 +326,31 @@ public class MicrobeServiceImpl implements MicrobeService {
         }
     }
 
+    @Override
+    public MicrobeFeedbackResDTO getFeedback(String serialNum, LocalDate date) {
+
+        Microbe microbe = microbeRepository.findByDeviceSerialNum(serialNum).orElseThrow(() -> new CustomException(ErrorCode.NO_SUCH_MICROBE) {
+            @Override
+            public ErrorCode getErrorCode() {
+                return super.getErrorCode();
+            }
+        });
+
+        System.out.println("조회할 미생물 번호 " + microbe.getMicrobeId());
+        List<String> microbeData = redisService.getMicrobeDataForDate(microbe.getMicrobeId(), date);
+
+        List<MicrobeFeedbackDetailResDTO> detailList = microbeData.stream()
+                .map(this::mapToMicrobeFeedbackDetailResDTO)
+                .collect(Collectors.toList());
+
+        MicrobeFeedbackResDTO microbeFeedbackResDTO = MicrobeFeedbackResDTO.builder()
+                .date(date)
+                .dataList(detailList)
+                .build();
+
+        return microbeFeedbackResDTO;
+    }
+
     // 온도 상태 계산
     private EnvironmentState determineTemperatureState(float temperature) {
         if (temperature >= 20 && temperature <= 40) {
@@ -512,6 +537,39 @@ public class MicrobeServiceImpl implements MicrobeService {
                     .weight(weight)
                     .imgUrl(imgUrl)
                     .timestamp(recordNode.has("timestamp") ? recordNode.get("timestamp").asText() : "")
+                    .build();
+
+        } catch (Exception e) {
+            throw new CustomException(ErrorCode.JSON_PROCESSING_ERROR) {
+                @Override
+                public ErrorCode getErrorCode() {
+                    return super.getErrorCode();
+                }
+            };
+        }
+    }
+
+    private MicrobeFeedbackDetailResDTO mapToMicrobeFeedbackDetailResDTO(String recordJson) {
+        try {
+            // JSON 데이터 정리 및 파싱
+            JsonNode recordNode = parseJson(recordJson);
+
+            String createdAtStr = recordNode.has("created_at") ? recordNode.get("created_at").asText() : null;
+            LocalDateTime createdAt = (createdAtStr != null)
+                    ? LocalDateTime.parse(createdAtStr, DateTimeFormatter.ISO_DATE_TIME)
+                    : null;
+
+            List<String> foodCategories = recordNode.has("food_category") && !recordNode.get("food_category").isNull()
+                    ? objectMapper.convertValue(recordNode.get("food_category"), new TypeReference<List<String>>() {
+            })
+                    : Collections.emptyList();
+
+            String imgUrl = recordNode.has("img_url") ? recordNode.get("img_url").asText() : "";
+
+            return MicrobeFeedbackDetailResDTO.builder()
+                    .foodCategory(foodCategories)
+                    .imgUrl(imgUrl)
+                    .createdAt(createdAt)
                     .build();
 
         } catch (Exception e) {

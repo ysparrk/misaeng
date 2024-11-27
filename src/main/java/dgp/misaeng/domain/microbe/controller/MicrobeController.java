@@ -1,9 +1,6 @@
 package dgp.misaeng.domain.microbe.controller;
 
-import dgp.misaeng.domain.microbe.dto.reponse.MicrobeDateResDTO;
-import dgp.misaeng.domain.microbe.dto.reponse.MicrobeEnvironmentResDTO;
-import dgp.misaeng.domain.microbe.dto.reponse.MicrobeInfoResDTO;
-import dgp.misaeng.domain.microbe.dto.reponse.MicrobeYearMonthResDTO;
+import dgp.misaeng.domain.microbe.dto.reponse.*;
 import dgp.misaeng.domain.microbe.dto.request.*;
 import dgp.misaeng.domain.microbe.service.MicrobeService;
 import dgp.misaeng.global.dto.ResponseDTO;
@@ -168,6 +165,20 @@ public class MicrobeController {
         return ResponseEntity.status(HttpStatus.OK)
                 .body(ResponseDTO.builder()
                         .message("음식물 투여 카테고리 디테일 수정 성공")
+                        .build());
+    }
+
+    @GetMapping("/feedback/{serialNum}")
+    public ResponseEntity<ResponseDTO> getMicrobesFeedback(
+            @PathVariable String serialNum,
+            @RequestParam LocalDate date
+    ) {
+        MicrobeFeedbackResDTO feedback = microbeService.getFeedback(serialNum, date);
+
+        return ResponseEntity.status(HttpStatus.OK)
+                .body(ResponseDTO.builder()
+                        .message("사용자 피드백을 위한 음식물 투여 데이터 조회 성공")
+                        .data(feedback)
                         .build());
     }
 }
