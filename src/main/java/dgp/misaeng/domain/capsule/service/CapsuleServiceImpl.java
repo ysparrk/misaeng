@@ -25,12 +25,12 @@ import java.util.stream.Collectors;
 @Transactional(readOnly = true)
 public class CapsuleServiceImpl implements CapsuleService {
 
-    private static CapsuleRepository capsuleRepository;
-    private static CapsuleHistoryRepository capsuleHistoryRepository;
+    private final CapsuleRepository capsuleRepository;
+    private final CapsuleHistoryRepository capsuleHistoryRepository;
 
+    @Transactional
     @Override
     public void useCapsule(CapsuleReqDTO capsuleReqDTO) {
-
         List<Capsule> capsuleList = capsuleRepository.findAllBySerialNum(capsuleReqDTO.getSerialNum());
 
         for (CapsuleUseReqDTO capsuleUseReqDTO : capsuleReqDTO.getCapsuleList()) {
@@ -52,6 +52,7 @@ public class CapsuleServiceImpl implements CapsuleService {
             CapsuleHistory capsuleHistory = CapsuleHistory.builder()
                     .capsule(capsule)
                     .useCnt(capsuleUseReqDTO.getCapsuleCnt())
+                    .useState(capsuleUseReqDTO.isUseType())
                     .build();
             capsuleHistoryRepository.save(capsuleHistory);
         }
