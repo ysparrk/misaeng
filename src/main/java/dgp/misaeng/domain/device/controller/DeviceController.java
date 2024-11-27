@@ -110,7 +110,7 @@ public class DeviceController {
 
     @GetMapping("/state/{serialNum}")
     public ResponseEntity<ResponseDTO> getDeviceState(
-            @RequestParam String serialNum
+            @PathVariable String serialNum
     ) {
         DeviceStateResDTO deviceState = deviceService.getDeviceState(serialNum);
 

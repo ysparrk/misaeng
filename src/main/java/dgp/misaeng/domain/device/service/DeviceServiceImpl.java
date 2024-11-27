@@ -105,6 +105,7 @@ public class DeviceServiceImpl implements DeviceService {
         return deviceResDTOList;
     }
 
+    @Transactional
     @Override
     public void setEmptyState(String serialNum, boolean emptyState) {
         DeviceState deviceState = deviceStateRepository.findBySerialNum(serialNum).orElseThrow(() -> new CustomException(ErrorCode.NO_SUCH_DEVICE_STATE) {

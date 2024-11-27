@@ -14,7 +14,6 @@ public interface DeviceStateRepository extends JpaRepository<DeviceState, Long> 
     Optional<DeviceState> findByDeviceId(@Param("deviceId") Long deviceId);
 
     @Query("SELECT ds FROM DeviceState ds " +
-            "WHERE ds.device.serialNum = :serialNum " +
-            "AND ds.device.isDeleted = false")
+            "WHERE ds.device.serialNum = :serialNum ")
     Optional<DeviceState> findBySerialNum(@Param("serialNum") String serialNum);
 }
