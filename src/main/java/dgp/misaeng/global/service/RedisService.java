@@ -78,9 +78,10 @@ public class RedisService {
         String createdAtString = createdAt.format(DateTimeFormatter.ISO_LOCAL_DATE_TIME);
 
         String value = String.format(
-                "{\"temperature\": %.2f, \"humidity\": %.2f, \"created_at\": \"%s\", \"timestamp\": %d}",
+                "{\"temperature\": %.2f, \"humidity\": %.2f, \"humidity\": %.2f, \"created_at\": \"%s\", \"timestamp\": %d}",
                 microbeEnvironmentReqDTO.getTemperature(),
                 microbeEnvironmentReqDTO.getHumidity(),
+                microbeEnvironmentReqDTO.getGas(),
                 createdAtString,
                 timestamp
         );

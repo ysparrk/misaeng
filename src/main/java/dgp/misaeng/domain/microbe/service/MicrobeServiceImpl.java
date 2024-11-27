@@ -30,7 +30,6 @@ import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.YearMonth;
 import java.time.format.DateTimeFormatter;
-import java.time.format.DateTimeParseException;
 import java.time.temporal.ChronoUnit;
 import java.util.*;
 import java.util.regex.Matcher;
@@ -120,7 +119,11 @@ public class MicrobeServiceImpl implements MicrobeService {
         //비어있지 않다면
         if (latestData != null && !latestData.isEmpty()) {
             // JSON 파싱
+            System.out.println("data " + latestData);
+
+
             JsonNode latestDataJson = parseJson(latestData);
+
 
             String rgbStat = latestDataJson.get("rgb_stat").asText();
             List<String> foodCategories = objectMapper.convertValue(
@@ -260,9 +263,9 @@ public class MicrobeServiceImpl implements MicrobeService {
                     .allMatch(this::isEmptyRecord);
 
             if (isForbidden) {
-                result.add(new MicrobeYearMonthResDTO(date, CalendarState.FORBIDDEN));
+                result.add(new MicrobeYearMonthResDTO(date, MicrobeState.FORBIDDEN));
             } else if (isEmpty) {
-                result.add(new MicrobeYearMonthResDTO(date, CalendarState.EMPTY));
+                result.add(new MicrobeYearMonthResDTO(date, MicrobeState.EMPTY));
             }
         }
 
@@ -323,6 +326,31 @@ public class MicrobeServiceImpl implements MicrobeService {
         }
     }
 
+    @Override
+    public MicrobeFeedbackResDTO getFeedback(String serialNum, LocalDate date) {
+
+        Microbe microbe = microbeRepository.findByDeviceSerialNum(serialNum).orElseThrow(() -> new CustomException(ErrorCode.NO_SUCH_MICROBE) {
+            @Override
+            public ErrorCode getErrorCode() {
+                return super.getErrorCode();
+            }
+        });
+
+        System.out.println("조회할 미생물 번호 " + microbe.getMicrobeId());
+        List<String> microbeData = redisService.getMicrobeDataForDate(microbe.getMicrobeId(), date);
+
+        List<MicrobeFeedbackDetailResDTO> detailList = microbeData.stream()
+                .map(this::mapToMicrobeFeedbackDetailResDTO)
+                .collect(Collectors.toList());
+
+        MicrobeFeedbackResDTO microbeFeedbackResDTO = MicrobeFeedbackResDTO.builder()
+                .date(date)
+                .dataList(detailList)
+                .build();
+
+        return microbeFeedbackResDTO;
+    }
+
     // 온도 상태 계산
     private EnvironmentState determineTemperatureState(float temperature) {
         if (temperature >= 20 && temperature <= 40) {
@@ -360,16 +388,24 @@ public class MicrobeServiceImpl implements MicrobeService {
         }
     }
 
+
     private String sanitizeJson(String data) {
         // 정규식을 사용하여 JSON 데이터를 변환
-        Pattern pattern = Pattern.compile("\\[([A-Z_]+(?:,\\s?[A-Z_]+)*)\\]");
+        Pattern pattern = Pattern.compile("\\[([A-Za-z_\\s]+(?:,\\s?[A-Za-z_\\s]+)*)\\]");
         Matcher matcher = pattern.matcher(data);
         StringBuffer result = new StringBuffer();
 
         while (matcher.find()) {
             String matchedGroup = matcher.group(1);
-            String sanitizedGroup = matchedGroup.replaceAll("([A-Z_]+)", "\"$1\""); // "KIMCHI", "RICE", "FRIED"
-            matcher.appendReplacement(result, "[" + sanitizedGroup + "]");
+
+            // 빈 배열일 경우 null로 변환
+            if (matchedGroup == null || matchedGroup.trim().isEmpty()) {
+                matcher.appendReplacement(result, "null");
+            } else {
+                // 배열의 내용을 문자열로 감싸기
+                String sanitizedGroup = matchedGroup.replaceAll("([A-Za-z_\\s]+)", "\"$1\"").replaceAll(",\\s+", "\", \"");
+                matcher.appendReplacement(result, "[" + sanitizedGroup + "]");
+            }
         }
         matcher.appendTail(result);
 
@@ -490,9 +526,9 @@ public class MicrobeServiceImpl implements MicrobeService {
             boolean isForbidden = foodCategories.stream().anyMatch(this::isForbiddenCategory);
 
             // CalendarState 결정
-            CalendarState calendarState = isForbidden
-                    ? CalendarState.FORBIDDEN
-                    : CalendarState.COMPLETE;
+            MicrobeState calendarState = isForbidden
+                    ? MicrobeState.FORBIDDEN
+                    : MicrobeState.COMPLETE;
 
             return MicrobeDetailResDTO.builder()
                     .time(time != null ? time.format(DateTimeFormatter.ofPattern("HH:mm")) : null)
@@ -501,6 +537,39 @@ public class MicrobeServiceImpl implements MicrobeService {
                     .weight(weight)
                     .imgUrl(imgUrl)
                     .timestamp(recordNode.has("timestamp") ? recordNode.get("timestamp").asText() : "")
+                    .build();
+
+        } catch (Exception e) {
+            throw new CustomException(ErrorCode.JSON_PROCESSING_ERROR) {
+                @Override
+                public ErrorCode getErrorCode() {
+                    return super.getErrorCode();
+                }
+            };
+        }
+    }
+
+    private MicrobeFeedbackDetailResDTO mapToMicrobeFeedbackDetailResDTO(String recordJson) {
+        try {
+            // JSON 데이터 정리 및 파싱
+            JsonNode recordNode = parseJson(recordJson);
+
+            String createdAtStr = recordNode.has("created_at") ? recordNode.get("created_at").asText() : null;
+            LocalDateTime createdAt = (createdAtStr != null)
+                    ? LocalDateTime.parse(createdAtStr, DateTimeFormatter.ISO_DATE_TIME)
+                    : null;
+
+            List<String> foodCategories = recordNode.has("food_category") && !recordNode.get("food_category").isNull()
+                    ? objectMapper.convertValue(recordNode.get("food_category"), new TypeReference<List<String>>() {
+            })
+                    : Collections.emptyList();
+
+            String imgUrl = recordNode.has("img_url") ? recordNode.get("img_url").asText() : "";
+
+            return MicrobeFeedbackDetailResDTO.builder()
+                    .foodCategory(foodCategories)
+                    .imgUrl(imgUrl)
+                    .createdAt(createdAt)
                     .build();
 
         } catch (Exception e) {
