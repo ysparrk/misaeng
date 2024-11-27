@@ -1,6 +1,7 @@
 package dgp.misaeng.domain.device.service;
 
 import dgp.misaeng.domain.device.dto.reponse.DeviceResDTO;
+import dgp.misaeng.domain.device.dto.reponse.DeviceStateResDTO;
 import dgp.misaeng.domain.device.dto.request.DeviceReqDTO;
 import dgp.misaeng.global.util.enums.DeviceMode;
 
@@ -15,5 +16,6 @@ public interface DeviceService {
     void updateDeviceMode(Long deviceId, DeviceMode deviceMode);
     void updateCapsuleCycle(Long deviceId, Integer time);
     void updateEmptyActiveTime(Long deviceId, Integer time);
-
+    void updateCloseWaitTime(Long deviceId, float second);
+    DeviceStateResDTO getDeviceState(String serialNum);
 }

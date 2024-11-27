@@ -35,19 +35,24 @@ public class DeviceState {
     @Column(name = "capsule_cycle")
     private Integer capsuleCycle;
 
+    @Column(name = "close_wait_time")
+    private float closeWaitTime;
+
     @OneToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "device_id", nullable = false)
     private Device device;
 
     @Builder
-    public DeviceState(Long deviceStateId, DeviceMode deviceMode, Boolean emptyState, Integer emptyActiveTime, Integer capsuleCycle, Device device) {
+    public DeviceState(Long deviceStateId, DeviceMode deviceMode, Boolean emptyState, Integer emptyActiveTime, Integer capsuleCycle, float closeWaitTime, Device device) {
         this.deviceStateId = deviceStateId;
         this.deviceMode = deviceMode;
         this.emptyState = emptyState;
         this.emptyActiveTime = emptyActiveTime;
         this.capsuleCycle = capsuleCycle;
+        this.closeWaitTime = closeWaitTime;
         this.device = device;
     }
+
 
     public void setDeviceMode(DeviceMode deviceMode) {
         this.deviceMode = deviceMode;
@@ -63,5 +68,9 @@ public class DeviceState {
 
     public void setCapsuleCycle(Integer capsuleCycle) {
         this.capsuleCycle = capsuleCycle;
+    }
+
+    public void setCloseWaitTime(float closeWaitTime) {
+        this.closeWaitTime = closeWaitTime;
     }
 }

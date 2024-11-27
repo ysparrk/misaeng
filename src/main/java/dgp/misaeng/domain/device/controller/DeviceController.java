@@ -1,6 +1,7 @@
 package dgp.misaeng.domain.device.controller;
 
 import dgp.misaeng.domain.device.dto.reponse.DeviceResDTO;
+import dgp.misaeng.domain.device.dto.reponse.DeviceStateResDTO;
 import dgp.misaeng.domain.device.dto.request.*;
 import dgp.misaeng.domain.device.service.DeviceService;
 import dgp.misaeng.global.dto.ResponseDTO;
@@ -46,7 +47,7 @@ public class DeviceController {
 
     }
 
-    @PutMapping("/empty")
+    @PutMapping("/state/empty")
     public ResponseEntity<ResponseDTO> emptyOn(
             @RequestBody DeviceEmptyStateReqDTO deviceEmptyStateReqDTO
             ) {
@@ -59,7 +60,7 @@ public class DeviceController {
     }
 
 
-    @PutMapping("/mode")
+    @PutMapping("/state/mode")
     public ResponseEntity<ResponseDTO> updateMode(
             @RequestBody DeviceModeReqDTO deviceModeReqDTO
     ) {
@@ -71,7 +72,7 @@ public class DeviceController {
                         .build());
     }
 
-    @PostMapping("/capsule-cycle")
+    @PostMapping("/state/capsule-cycle")
     public ResponseEntity<ResponseDTO> updateCapsuleCycle(
             @RequestBody DeviceCapsuleCycleReqDTO deviceCapsuleCycleReqDTO
     ) {
@@ -83,7 +84,7 @@ public class DeviceController {
                         .build());
     }
 
-    @PostMapping("/empty-active-time")
+    @PostMapping("/state/empty-active-time")
     public ResponseEntity<ResponseDTO> updateEmptyActiveTime(
             @RequestBody DeviceEmptyActiveTimeReqDTO deviceEmptyActiveTimeReqDTO
             ) {
@@ -95,6 +96,29 @@ public class DeviceController {
                         .build());
     }
 
+    @PostMapping("/state/close-wait-time")
+    public ResponseEntity<ResponseDTO> updateClosedWaitTime(
+            @RequestBody DeviceCloseWaitTimeReqDTO deviceCloseWaitTimeReqDTO
+    ) {
+        deviceService.updateCloseWaitTime(deviceCloseWaitTimeReqDTO.getDeviceId(), deviceCloseWaitTimeReqDTO.getCloseWaitTime());
 
+        return ResponseEntity.status(HttpStatus.OK)
+                .body(ResponseDTO.builder()
+                        .message("뚜껑 닫힘 대기 시간 설정 성공")
+                        .build());
+    }
 
+    @GetMapping("/state/{serialNum}")
+    public ResponseEntity<ResponseDTO> getDeviceState(
+            @RequestParam String serialNum
+    ) {
+        DeviceStateResDTO deviceState = deviceService.getDeviceState(serialNum);
+
+        return ResponseEntity.status(HttpStatus.OK)
+                .body(ResponseDTO.builder()
+                        .message("기기 제어 상태 조회 성공")
+                        .data(deviceState)
+                        .build());
+
+    }
 }

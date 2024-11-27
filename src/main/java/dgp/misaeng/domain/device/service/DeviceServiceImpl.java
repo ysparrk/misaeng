@@ -1,6 +1,7 @@
 package dgp.misaeng.domain.device.service;
 
 import dgp.misaeng.domain.device.dto.reponse.DeviceResDTO;
+import dgp.misaeng.domain.device.dto.reponse.DeviceStateResDTO;
 import dgp.misaeng.domain.device.dto.request.DeviceModeReqDTO;
 import dgp.misaeng.domain.device.dto.request.DeviceReqDTO;
 import dgp.misaeng.domain.device.entity.Device;
@@ -63,6 +64,7 @@ public class DeviceServiceImpl implements DeviceService {
                 .emptyState(false)
                 .emptyActiveTime(12)
                 .capsuleCycle(6)
+                .closeWaitTime(5)
                 .build();
 
         deviceStateRepository.save(deviceState);
@@ -165,5 +167,39 @@ public class DeviceServiceImpl implements DeviceService {
 
         deviceState.setEmptyActiveTime(time);
         deviceStateRepository.save(deviceState);
+    }
+
+    @Transactional
+    @Override
+    public void updateCloseWaitTime(Long deviceId, float second) {
+        DeviceState deviceState = deviceStateRepository.findByDeviceId(deviceId).orElseThrow(() -> new CustomException(ErrorCode.NO_SUCH_DEVICE_STATE) {
+            @Override
+            public ErrorCode getErrorCode() {
+                return super.getErrorCode();
+            }
+        });
+
+        deviceState.setCloseWaitTime(second);
+        deviceStateRepository.save(deviceState);
+    }
+
+    @Override
+    public DeviceStateResDTO getDeviceState(String serialNum) {
+        DeviceState deviceState = deviceStateRepository.findBySerialNum(serialNum).orElseThrow(() -> new CustomException(ErrorCode.NO_SUCH_DEVICE_STATE) {
+            @Override
+            public ErrorCode getErrorCode() {
+                return super.getErrorCode();
+            }
+        });
+
+        DeviceStateResDTO deviceStateResDTO = DeviceStateResDTO.builder()
+                .deviceMode(deviceState.getDeviceMode())
+                .emptyState(deviceState.getEmptyState())
+                .emptyActiveTime(deviceState.getEmptyActiveTime())
+                .capsuleCycle(deviceState.getCapsuleCycle())
+                .closeWaitTime(deviceState.getCloseWaitTime())
+                .build();
+
+        return deviceStateResDTO;
     }
 }
