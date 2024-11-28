@@ -1,11 +1,10 @@
 package dgp.misaeng.domain.microbe.dto.reponse;
 
-import dgp.misaeng.global.util.enums.FoodWeightState;
-import dgp.misaeng.global.util.enums.MicrobeColor;
-import dgp.misaeng.global.util.enums.MicrobeMood;
-import dgp.misaeng.global.util.enums.MicrobeMessage;
+import dgp.misaeng.global.util.enums.*;
 import lombok.Builder;
 import lombok.Getter;
+
+import java.time.LocalDate;
 
 @Getter
 public class MicrobeInfoResDTO {
@@ -16,11 +15,13 @@ public class MicrobeInfoResDTO {
     private MicrobeMood microbeMood;
     private MicrobeMessage microbeMessage;
     private FoodWeightState foodWeightState;
+    private MicrobeState microbeState;
     private float weight;
     private boolean forbidden;
+    private LocalDate createdAt;
 
     @Builder
-    public MicrobeInfoResDTO(Long microbeId, String microbeName, Integer bDay, MicrobeColor microbeColor, MicrobeMood microbeMood, MicrobeMessage microbeMessage, FoodWeightState foodWeightState, float weight, boolean forbidden) {
+    public MicrobeInfoResDTO(Long microbeId, String microbeName, Integer bDay, MicrobeColor microbeColor, MicrobeMood microbeMood, MicrobeMessage microbeMessage, FoodWeightState foodWeightState, MicrobeState microbeState, float weight, boolean forbidden, LocalDate createdAt) {
         this.microbeId = microbeId;
         this.microbeName = microbeName;
         this.bDay = bDay;
@@ -28,7 +29,9 @@ public class MicrobeInfoResDTO {
         this.microbeMood = microbeMood;
         this.microbeMessage = microbeMessage;
         this.foodWeightState = foodWeightState;
+        this.microbeState = microbeState;
         this.weight = weight;
         this.forbidden = forbidden;
+        this.createdAt = createdAt;
     }
 }
