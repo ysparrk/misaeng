@@ -11,10 +11,11 @@ import dgp.misaeng.domain.capsule.entity.CapsuleHistory;
 import dgp.misaeng.domain.capsule.repository.CapsuleHistoryRepository;
 import dgp.misaeng.domain.capsule.repository.CapsuleRepository;
 import dgp.misaeng.domain.device.entity.Device;
+import dgp.misaeng.domain.device.entity.DeviceState;
 import dgp.misaeng.domain.device.repository.DeviceRepository;
+import dgp.misaeng.domain.device.repository.DeviceStateRepository;
 import dgp.misaeng.domain.microbe.dto.reponse.*;
 import dgp.misaeng.domain.microbe.dto.request.MicrobeDetailUpdateReqDTO;
-import dgp.misaeng.domain.microbe.dto.request.MicrobeNewReqDTO;
 import dgp.misaeng.domain.microbe.dto.request.MicrobeRecordReqDTO;
 import dgp.misaeng.domain.microbe.dto.request.MicrobeUpdateReqDTO;
 import dgp.misaeng.domain.microbe.entity.Microbe;
@@ -39,6 +40,7 @@ import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 @Service
 @RequiredArgsConstructor
@@ -52,6 +54,7 @@ public class MicrobeServiceImpl implements MicrobeService {
     private final DeviceRepository deviceRepository;
     private final CapsuleRepository capsuleRepository;
     private final CapsuleHistoryRepository capsuleHistoryRepository;
+    private final DeviceStateRepository deviceStateRepository;
 
     @Override
     public void saveRecord(MicrobeRecordReqDTO microbeRecordReqDTO, MultipartFile image) {
@@ -109,24 +112,34 @@ public class MicrobeServiceImpl implements MicrobeService {
     }
 
     @Override
-    public MicrobeInfoResDTO getMicrobeInfo(Long microbeId) {
+    public MicrobeInfoResDTO getMicrobeInfo(Long microbeId, Long deviceId) {
 
         List<String> todayData = redisService.getTodayMicrobeData(microbeId);  //총 weight 계산용
         String latestData = redisService.getLatestData(microbeId);
+
 
         // 기본값
         MicrobeColor microbeColor = MicrobeColor.BLUE;
         MicrobeMood microbeMood = MicrobeMood.SMILE;
         MicrobeMessage microbeMessage = MicrobeMessage.GOOD;
         FoodWeightState foodWeightState = FoodWeightState.GOOD;
+        MicrobeState microbeState = MicrobeState.EMPTY;
         float totalWeightToday = 0f;
         boolean forbidden = false;
+
+        //기기 상태
+        DeviceState deviceState = deviceStateRepository.findByDeviceId(deviceId).orElseThrow(() -> new CustomException(ErrorCode.NO_SUCH_DEVICE_STATE) {
+            @Override
+            public ErrorCode getErrorCode() {
+                return super.getErrorCode();
+            }
+        });
+
 
         //비어있지 않다면
         if (latestData != null && !latestData.isEmpty()) {
             // JSON 파싱
             System.out.println("data " + latestData);
-
 
             JsonNode latestDataJson = parseJson(latestData);
 
@@ -136,6 +149,14 @@ public class MicrobeServiceImpl implements MicrobeService {
                     latestDataJson.get("food_category"),
                     new TypeReference<>() {}
             );
+
+            //미생물 상태 체크
+            boolean isEmpty = latestDataJson.get("is_empty").asBoolean();
+
+            if (deviceState.getEmptyState()) microbeState = MicrobeState.EMPTY;
+            else if (isEmpty) microbeState = MicrobeState.COMPLETE;
+            else microbeState = MicrobeState.PROCESSING;
+
 
             // MicrobeColor 계산
             microbeColor = determineClosestColor(rgbStat);
@@ -172,8 +193,10 @@ public class MicrobeServiceImpl implements MicrobeService {
                 .microbeMood(microbeMood)
                 .microbeMessage(microbeMessage)
                 .foodWeightState(foodWeightState)
+                .microbeState(microbeState)
                 .weight(totalWeightToday)
                 .forbidden(forbidden)
+                .createdAt(microbe.getCreatedAt().toLocalDate())
                 .build();
 
     }
@@ -289,9 +312,9 @@ public class MicrobeServiceImpl implements MicrobeService {
                     .allMatch(this::isEmptyRecord);
 
             if (isForbidden) {
-                result.add(new MicrobeYearMonthResDTO(date, MicrobeState.FORBIDDEN));
+                result.add(new MicrobeYearMonthResDTO(date, CalendarState.FORBIDDEN));
             } else if (isEmpty) {
-                result.add(new MicrobeYearMonthResDTO(date, MicrobeState.EMPTY));
+                result.add(new MicrobeYearMonthResDTO(date, CalendarState.EMPTY));
             }
         }
 
@@ -299,15 +322,25 @@ public class MicrobeServiceImpl implements MicrobeService {
     }
 
     @Override
-    public MicrobeDateResDTO getDateDetails(Long microbeId, LocalDate localDate) {
-        List<String> microbeData = redisService.getMicrobeDataForDate(microbeId, localDate);
+    public MicrobeDateResDTO getDateDetails(Long microbeId, LocalDate date) {
+        List<String> microbeData = redisService.getMicrobeDataForDate(microbeId, date);
 
-        List<MicrobeDetailResDTO> detailList = microbeData.stream()
-                .map(this::mapToMicrobeDetailResDTO)
+        Collections.reverse(microbeData);
+
+        List<MicrobeDetailResDTO> detailList = IntStream.range(0, microbeData.size())
+                .mapToObj(index -> mapToMicrobeDetailResDTO(
+                        microbeData.get(index),
+                        date,
+                        index == 0
+                ))
+                .filter(Objects::nonNull)
                 .collect(Collectors.toList());
 
+        float totalWeight = calculateTotalWeightToday(microbeData);
+
         return MicrobeDateResDTO.builder()
-                .date(localDate)
+                .date(date)
+                .totalWeight(totalWeight)
                 .detailList(detailList)
                 .build();
     }
@@ -470,7 +503,7 @@ public class MicrobeServiceImpl implements MicrobeService {
     }
 
     private boolean isForbiddenCategory(String category) {
-        return List.of("KIMCHI", "STIR_FRIED", "FRIED").contains(category);
+        return List.of("KIMCHI", "STIR_FRIED", "FRIED", "NONE_FOOD").contains(category);
     }
 
 
@@ -533,15 +566,22 @@ public class MicrobeServiceImpl implements MicrobeService {
         }
     }
 
-    private MicrobeDetailResDTO mapToMicrobeDetailResDTO(String recordJson) {
+    private MicrobeDetailResDTO mapToMicrobeDetailResDTO(String recordJson, LocalDate date, boolean isFirst) {
         try {
             // JSON 데이터 정리 및 파싱
             JsonNode recordNode = parseJson(recordJson);
 
+            boolean isEmpty = recordNode.get("is_empty").asBoolean();
+
+            // 비어있는 데이터면 return
+            if (isEmpty) return null;
+
             String createdAt = recordNode.has("created_at") ? recordNode.get("created_at").asText() : null;
-            LocalTime time = (createdAt != null)
-                    ? LocalDateTime.parse(createdAt, DateTimeFormatter.ISO_DATE_TIME).toLocalTime() // hh:mm 추출
+            LocalDateTime createdDateTime = createdAt != null
+                    ? LocalDateTime.parse(createdAt, DateTimeFormatter.ISO_DATE_TIME)
                     : null;
+
+            LocalTime time = createdDateTime != null ? createdDateTime.toLocalTime() : null;
 
             List<String> foodCategories = recordNode.has("food_category") && !recordNode.get("food_category").isNull()
                     ? objectMapper.convertValue(recordNode.get("food_category"), new TypeReference<List<String>>() {})
@@ -549,16 +589,32 @@ public class MicrobeServiceImpl implements MicrobeService {
 
             float weight = recordNode.has("weight") ? (float) recordNode.get("weight").asDouble() : 0f;
             String imgUrl = recordNode.has("img_url") ? recordNode.get("img_url").asText() : "";
-            boolean isForbidden = foodCategories.stream().anyMatch(this::isForbiddenCategory);
 
-            // CalendarState 결정
-            MicrobeState calendarState = isForbidden
+
+            /**
+             * 미생물 상태 판단
+             * 1) 오늘 날짜가 아니라면 -> COMPLETE or FORBIDDEN
+             * 2) 오늘 날짜라면 확인하기
+             */
+            boolean isForbidden = foodCategories.stream().anyMatch(this::isForbiddenCategory);
+            MicrobeState microbeState = isForbidden
                     ? MicrobeState.FORBIDDEN
-                    : MicrobeState.COMPLETE;
+                    : (weight == 0f && foodCategories.isEmpty() ? MicrobeState.EMPTY : MicrobeState.COMPLETE);
+
+            if (createdDateTime != null && createdDateTime.toLocalDate().isEqual(date)) {
+
+                if (isFirst && microbeState == MicrobeState.COMPLETE) {
+                    microbeState = MicrobeState.PROCESSING;
+                } else {
+                    microbeState = isForbidden
+                            ? MicrobeState.FORBIDDEN
+                            : (weight > 0f || !foodCategories.isEmpty() ? MicrobeState.COMPLETE : MicrobeState.PROCESSING);
+                }
+            }
 
             return MicrobeDetailResDTO.builder()
                     .time(time != null ? time.format(DateTimeFormatter.ofPattern("HH:mm")) : null)
-                    .calendarState(calendarState)
+                    .microbeState(microbeState)
                     .foodCategory(foodCategories)
                     .weight(weight)
                     .imgUrl(imgUrl)
