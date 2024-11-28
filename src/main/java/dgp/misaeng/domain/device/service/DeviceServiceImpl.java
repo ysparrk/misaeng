@@ -88,7 +88,7 @@ public class DeviceServiceImpl implements DeviceService {
             if (microbeOpt.isPresent()) {
                 Microbe microbe = microbeOpt.get();
                 System.out.println(microbe.getMicrobeName());
-                microbeInfo = microbeService.getMicrobeInfo(microbe.getMicrobeId());
+                microbeInfo = microbeService.getMicrobeInfo(microbe.getMicrobeId(), device.getDeviceId());
             }
 
             // DeviceResDTO 생성 및 리스트에 추가

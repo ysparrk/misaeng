@@ -14,7 +14,7 @@ import java.util.List;
 public interface MicrobeService {
     void saveRecord(MicrobeRecordReqDTO microbeRecordReqDTO, MultipartFile image);
     MicrobeEnvironmentResDTO getEnvironment(Long microbeId);
-    MicrobeInfoResDTO getMicrobeInfo(Long microbeId);
+    MicrobeInfoResDTO getMicrobeInfo(Long microbeId, Long deviceId);
     void saveMicrobe(Long deviceId, String microbeName);
     void updateMicrobe(MicrobeUpdateReqDTO microbeUpdateReqDTO);
     void deleteMicrobe(Long microbeId);
