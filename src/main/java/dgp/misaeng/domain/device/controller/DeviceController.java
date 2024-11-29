@@ -1,5 +1,6 @@
 package dgp.misaeng.domain.device.controller;
 
+import dgp.misaeng.domain.device.dto.reponse.DeviceRegisterResDTO;
 import dgp.misaeng.domain.device.dto.reponse.DeviceResDTO;
 import dgp.misaeng.domain.device.dto.reponse.DeviceStateResDTO;
 import dgp.misaeng.domain.device.dto.request.*;
@@ -25,11 +26,12 @@ public class DeviceController {
             @RequestBody DeviceReqDTO deviceReqDTO
             ) {
 
-        deviceService.saveDevice(memberId, deviceReqDTO);
+        DeviceRegisterResDTO registerInfo = deviceService.saveDevice(memberId, deviceReqDTO);
 
         return ResponseEntity.status(HttpStatus.OK)
                 .body(ResponseDTO.builder()
                         .message("기기 등록 성공")
+                        .data(registerInfo)
                         .build());
     }
 

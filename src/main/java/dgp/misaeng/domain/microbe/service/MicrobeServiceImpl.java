@@ -203,7 +203,7 @@ public class MicrobeServiceImpl implements MicrobeService {
 
     @Transactional
     @Override
-    public void saveMicrobe(Long deviceId, String microbeName) {
+    public Long saveMicrobe(Long deviceId, String microbeName) {
         //새로운 미생물 등록
         Device device = deviceRepository.findById(deviceId)
                 .orElseThrow(() -> new CustomException(ErrorCode.NO_SUCH_DEVICE) {
@@ -240,7 +240,9 @@ public class MicrobeServiceImpl implements MicrobeService {
                     .build();
 
             capsuleHistoryRepository.save(history);
+
         }
+        return microbe.getMicrobeId();
     }
 
     @Transactional
