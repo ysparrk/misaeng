@@ -1,5 +1,6 @@
 package dgp.misaeng.domain.device.service;
 
+import dgp.misaeng.domain.device.dto.reponse.DeviceRegisterResDTO;
 import dgp.misaeng.domain.device.dto.reponse.DeviceResDTO;
 import dgp.misaeng.domain.device.dto.reponse.DeviceStateResDTO;
 import dgp.misaeng.domain.device.dto.request.DeviceReqDTO;
@@ -37,7 +38,7 @@ public class DeviceServiceImpl implements DeviceService {
 
 
     @Override
-    public void saveDevice(Long memberId, DeviceReqDTO deviceReqDTO) {
+    public DeviceRegisterResDTO saveDevice(Long memberId, DeviceReqDTO deviceReqDTO) {
 
         Member member = memberRepository.findById(memberId).orElseThrow(() -> new CustomException(ErrorCode.MEMBER_NOT_FOUND) {
             @Override
@@ -68,7 +69,15 @@ public class DeviceServiceImpl implements DeviceService {
 
         deviceStateRepository.save(deviceState);
 
-        microbeService.saveMicrobe(device.getDeviceId(), deviceReqDTO.getMicrobeName());
+        Long microbeId = microbeService.saveMicrobe(device.getDeviceId(), deviceReqDTO.getMicrobeName());
+
+        DeviceRegisterResDTO deviceRegisterResDTO = DeviceRegisterResDTO.builder()
+                .deviceId(device.getDeviceId())
+                .serialNum(device.getSerialNum())
+                .microbeId(microbeId)
+                .build();
+
+        return deviceRegisterResDTO;
     }
 
     @Override

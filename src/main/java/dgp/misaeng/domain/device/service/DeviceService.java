@@ -1,5 +1,6 @@
 package dgp.misaeng.domain.device.service;
 
+import dgp.misaeng.domain.device.dto.reponse.DeviceRegisterResDTO;
 import dgp.misaeng.domain.device.dto.reponse.DeviceResDTO;
 import dgp.misaeng.domain.device.dto.reponse.DeviceStateResDTO;
 import dgp.misaeng.domain.device.dto.request.DeviceReqDTO;
@@ -8,7 +9,7 @@ import dgp.misaeng.global.util.enums.DeviceMode;
 import java.util.List;
 
 public interface DeviceService {
-    void saveDevice(Long memberId, DeviceReqDTO deviceReqDTO);
+    DeviceRegisterResDTO saveDevice(Long memberId, DeviceReqDTO deviceReqDTO);
     List<DeviceResDTO> getDevices(Long memberId);
 
     //제어
