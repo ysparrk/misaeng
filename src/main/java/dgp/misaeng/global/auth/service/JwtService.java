@@ -11,12 +11,15 @@ import io.jsonwebtoken.security.Keys;
 import net.minidev.json.JSONObject;
 import net.minidev.json.parser.JSONParser;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.*;
 import org.springframework.security.oauth2.jwt.JwtException;
 import org.springframework.stereotype.Service;
+import org.springframework.web.client.RestTemplate;
 
 import javax.crypto.spec.SecretKeySpec;
 import java.util.Base64;
 import java.util.Date;
+import java.util.Map;
 import java.util.Objects;
 
 
@@ -86,7 +89,7 @@ public class JwtService {
 
     public String getSubject(String token){
         return Jwts.parserBuilder()
-                .setSigningKey(secretKey.getBytes())
+                .setSigningKey(Keys.hmacShaKeyFor(secretKey.getBytes()))
                 .build()
                 .parseClaimsJws(token)
                 .getBody()
@@ -124,5 +127,73 @@ public class JwtService {
             throw new TokenException(ErrorCode.TOKEN_INVALID);
         }
         return (String) jsonObject.get("sub");
+    }
+
+    //새로 작성
+    public String makeAccessToken(Long userId) {
+        System.out.println("Generating Access Token for User ID: {}" + userId);
+
+        Date now = new Date();
+        Date expiryDate = new Date(now.getTime() + expirationHours);
+
+        return Jwts.builder()
+                .setSubject(String.valueOf(userId))
+                .setIssuedAt(now)
+                .setExpiration(expiryDate)
+                .signWith(Keys.hmacShaKeyFor(secretKey.getBytes()), SignatureAlgorithm.HS512)
+                .compact();
+    }
+
+    public boolean validateKakaoAccessToken(String accessToken) {
+        String url = "https://kapi.kakao.com/v1/user/access_token_info";
+        RestTemplate restTemplate = new RestTemplate();
+
+        HttpHeaders headers = new HttpHeaders();
+        headers.set("Authorization", "Bearer " + accessToken);
+
+        HttpEntity<String> entity = new HttpEntity<>(headers);
+
+        try {
+            ResponseEntity<String> response = restTemplate.exchange(url, HttpMethod.GET, entity, String.class);
+            if (response.getStatusCode() == HttpStatus.OK) {
+                System.out.println("Kakao token is valid: " + response.getBody());
+                return true;
+            }
+        } catch (Exception e) {
+            System.out.println("Kakao token validation failed: " + e.getMessage());
+        }
+
+        return false;
+    }
+
+    public String generateJwtForKakaoUser(String kakaoAccessToken) {
+        if (!validateKakaoAccessToken(kakaoAccessToken)) {
+            throw new IllegalArgumentException("Invalid Kakao access token");
+        }
+
+        // Kakao API에서 사용자 ID 가져오기
+        Long kakaoUserId = getKakaoUserId(kakaoAccessToken);
+
+        // 사용자 정보를 기반으로 JWT 생성
+        return Jwts.builder()
+                .setSubject(String.valueOf(kakaoUserId))
+                .claim("provider", "kakao")
+                .setIssuedAt(new Date())
+                .setExpiration(new Date(System.currentTimeMillis() + 86400000)) // 1일 유효
+                .signWith(Keys.hmacShaKeyFor(secretKey.getBytes()), SignatureAlgorithm.HS512)
+                .compact();
+    }
+
+    private Long getKakaoUserId(String accessToken) {
+        String url = "https://kapi.kakao.com/v1/user/access_token_info";
+        RestTemplate restTemplate = new RestTemplate();
+
+        HttpHeaders headers = new HttpHeaders();
+        headers.set("Authorization", "Bearer " + accessToken);
+
+        HttpEntity<String> entity = new HttpEntity<>(headers);
+
+        ResponseEntity<Map> response = restTemplate.exchange(url, HttpMethod.GET, entity, Map.class);
+        return Long.valueOf(String.valueOf(response.getBody().get("id")));
     }
 }

@@ -2,12 +2,14 @@ package dgp.misaeng.global.auth.filter;
 
 import dgp.misaeng.global.auth.dto.UserAuthentication;
 import dgp.misaeng.global.auth.service.JwtService;
-import io.jsonwebtoken.ExpiredJwtException;
+import io.jsonwebtoken.Jwts;
+import io.jsonwebtoken.security.Keys;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -31,26 +33,32 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     private static final String AUTHORIZATION_HEADER = "Authorization";
     private static final String BEARER_TYPE = "Bearer";
 
+    @Value("${custom.jwt.secretKey}")
+    private String secretKey;
+
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
             throws ServletException, IOException {
         //헤더에서 AUTHORIZATION에 담긴 토큰 가져오기
         String token = parseBearerToken(request);
+
         //만약 토큰이 없다면 걍 넘김
         if(token==null){
             filterChain.doFilter(request,response);
             return;
         }
 
-        try{
-            jwtService.validateToken(token);
-        }catch(ExpiredJwtException expiredJwtException){
-            filterChain.doFilter(request,response);
-            return;
-        }catch (JwtException | IllegalArgumentException | NullPointerException e){
-            filterChain.doFilter(request,response);
+        // Kakao Access Token 검증
+        if (!jwtService.validateKakaoAccessToken(token)) {
+            System.out.println("Invalid Kakao access token");
+            response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+            response.getWriter().write("Invalid Kakao access token");
+            response.getWriter().flush();
             return;
         }
+
+        //Kakao Access Token이 유효하면 새로운 JWT 생성
+        token = jwtService.generateJwtForKakaoUser(token);
 
         //user id 가져오기
         UserAuthentication userAuthentication = parseUserSpecification(token);
@@ -66,6 +74,20 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         SecurityContextHolder.getContext().setAuthentication(authenticationToken);
         filterChain.doFilter(request,response);
 
+    }
+
+    //새로 만듬
+    // 토큰이 서버에서 발급한 JWT인지 확인하는 메서드
+    private boolean isJwtToken(String token) {
+        try {
+            Jwts.parserBuilder()
+                    .setSigningKey(Keys.hmacShaKeyFor(secretKey.getBytes()))
+                    .build()
+                    .parseClaimsJws(token);
+            return true;
+        } catch (JwtException e) {
+            return false;
+        }
     }
 
     private String parseBearerToken(HttpServletRequest request) {
