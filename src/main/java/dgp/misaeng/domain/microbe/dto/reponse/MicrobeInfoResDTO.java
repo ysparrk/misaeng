@@ -18,10 +18,11 @@ public class MicrobeInfoResDTO {
     private MicrobeState microbeState;
     private float weight;
     private boolean forbidden;
+    private Integer lifespan;
     private LocalDate createdAt;
 
     @Builder
-    public MicrobeInfoResDTO(Long microbeId, String microbeName, Integer bDay, MicrobeColor microbeColor, MicrobeMood microbeMood, MicrobeMessage microbeMessage, FoodWeightState foodWeightState, MicrobeState microbeState, float weight, boolean forbidden, LocalDate createdAt) {
+    public MicrobeInfoResDTO(Long microbeId, String microbeName, Integer bDay, MicrobeColor microbeColor, MicrobeMood microbeMood, MicrobeMessage microbeMessage, FoodWeightState foodWeightState, MicrobeState microbeState, float weight, boolean forbidden, Integer lifespan, LocalDate createdAt) {
         this.microbeId = microbeId;
         this.microbeName = microbeName;
         this.bDay = bDay;
@@ -32,6 +33,7 @@ public class MicrobeInfoResDTO {
         this.microbeState = microbeState;
         this.weight = weight;
         this.forbidden = forbidden;
+        this.lifespan = lifespan;
         this.createdAt = createdAt;
     }
 }

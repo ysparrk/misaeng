@@ -196,6 +196,7 @@ public class MicrobeServiceImpl implements MicrobeService {
                 .microbeState(microbeState)
                 .weight(totalWeightToday)
                 .forbidden(forbidden)
+                .lifespan(365)  //TODO: 미생물 수명예측 알고리즘 적용
                 .createdAt(microbe.getCreatedAt().toLocalDate())
                 .build();
 
