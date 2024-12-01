@@ -76,7 +76,7 @@ public class RedisService {
 
 
         String value = String.format(
-                "{\"temperature\": %.2f, \"humidity\": %.2f, \"humidity\": %.2f, \"created_at\": \"%s\", \"timestamp\": %d}",
+                "{\"temperature\": %.2f, \"humidity\": %.2f, \"gas\": %.2f, \"created_at\": \"%s\", \"timestamp\": %d}",
                 microbeEnvironmentReqDTO.getTemperature(),
                 microbeEnvironmentReqDTO.getHumidity(),
                 microbeEnvironmentReqDTO.getGas(),
