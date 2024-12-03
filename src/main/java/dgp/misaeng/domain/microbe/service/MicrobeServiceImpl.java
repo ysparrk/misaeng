@@ -297,6 +297,10 @@ public class MicrobeServiceImpl implements MicrobeService {
         LocalDate startDate = yearMonth.atDay(1);
         LocalDate endDate = yearMonth.atEndOfMonth();
 
+        //endDate가 미래날짜인 경우 오늘날짜로 수정
+        LocalDate today = LocalDate.now();
+        if (endDate.isAfter(today)) endDate = today;
+
         List<MicrobeYearMonthResDTO> result = new ArrayList<>();
 
         for (LocalDate date = startDate; !date.isAfter(endDate); date = date.plusDays(1)) {
