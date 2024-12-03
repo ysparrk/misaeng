@@ -1,5 +1,6 @@
 package dgp.misaeng.global.service;
 
+import dgp.misaeng.domain.microbe.dto.SummaryResult;
 import dgp.misaeng.domain.microbe.dto.request.MicrobeEnvironmentReqDTO;
 import dgp.misaeng.domain.microbe.dto.request.MicrobeRecordReqDTO;
 import dgp.misaeng.domain.microbe.repository.MicrobeRepository;
@@ -17,7 +18,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
-
+import java.util.stream.Collectors;
 
 
 @Service
@@ -102,8 +103,13 @@ public class RedisService {
         valueBuilder.append("\"weight\": ").append(microbeRecordReqDTO.getWeight()).append(", ");
         valueBuilder.append("\"rgb_stat\": \"").append(microbeRecordReqDTO.getRgbStat()).append("\", ");
         valueBuilder.append("\"food_category\": ").append(
-                microbeRecordReqDTO.getFoodCategory() != null ? microbeRecordReqDTO.getFoodCategory().toString() : "[]"
+                microbeRecordReqDTO.getFoodCategory() != null
+                        ? microbeRecordReqDTO.getFoodCategory().stream()
+                        .map(String::trim) // 각 항목의 앞뒤 공백 제거
+                        .collect(Collectors.joining("\", \"", "[\"", "\"]")) // JSON 배열 형식으로 변환
+                        : "[]"
         ).append(", ");
+
         valueBuilder.append("\"created_at\": \"").append(createdAtString).append("\", ");
         valueBuilder.append("\"timestamp\": ").append(timestamp).append(", ");
         valueBuilder.append("\"img_url\": \"").append(imgUrl != null ? imgUrl : "").append("\", ");
@@ -195,5 +201,21 @@ public class RedisService {
         microbeRedis.opsForZSet().remove(key, originalData);
 
         microbeRedis.opsForZSet().add(key, updatedData, timestamp);
+    }
+
+    public void saveDailySummary(Long microbeId, LocalDate date, SummaryResult summary) {
+        String summaryKey = "daily_summary:" + microbeId + ":" + date.toString();
+
+        String value = String.format(
+                "{\"temperatureOutOfRangeDays\": %d, \"humidityOutOfRangeDays\": %d, \"foodForbiddenCount\": %d, \"foodFavorableCount\": %d, \"soilCondition\": \"%s\", \"penaltyDays\": %d}",
+                summary.getTemperatureOutOfRangeDays(),
+                summary.getHumidityOutOfRangeDays(),
+                summary.getFoodForbiddenCount(),
+                summary.getFoodFavorableCount(),
+                summary.getSoilCondition(),
+                summary.getPenaltyDays()
+        );
+
+        microbeRedis.opsForValue().set(summaryKey, value);
     }
 }

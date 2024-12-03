@@ -21,11 +21,12 @@ public class CapsuleController {
     public ResponseEntity<ResponseDTO> saveCapsuleUse(
             @RequestBody CapsuleReqDTO capsuleReqDTO) {
 
-        capsuleService.useCapsule(capsuleReqDTO);
+        CapsuleResDTO capsuleResDTO = capsuleService.useCapsule(capsuleReqDTO);
 
         return ResponseEntity.status(HttpStatus.OK)
                 .body(ResponseDTO.builder()
                         .message("캡슐 사용 기록 저장 성공")
+                        .data(capsuleResDTO)
                         .build());
     }
 
