@@ -1,6 +1,5 @@
 package dgp.misaeng.global.service;
 
-import dgp.misaeng.domain.microbe.dto.SummaryResult;
 import dgp.misaeng.domain.microbe.dto.request.MicrobeEnvironmentReqDTO;
 import dgp.misaeng.domain.microbe.dto.request.MicrobeRecordReqDTO;
 import dgp.misaeng.domain.microbe.repository.MicrobeRepository;
@@ -203,19 +202,4 @@ public class RedisService {
         microbeRedis.opsForZSet().add(key, updatedData, timestamp);
     }
 
-    public void saveDailySummary(Long microbeId, LocalDate date, SummaryResult summary) {
-        String summaryKey = "daily_summary:" + microbeId + ":" + date.toString();
-
-        String value = String.format(
-                "{\"temperatureOutOfRangeDays\": %d, \"humidityOutOfRangeDays\": %d, \"foodForbiddenCount\": %d, \"foodFavorableCount\": %d, \"soilCondition\": \"%s\", \"penaltyDays\": %d}",
-                summary.getTemperatureOutOfRangeDays(),
-                summary.getHumidityOutOfRangeDays(),
-                summary.getFoodForbiddenCount(),
-                summary.getFoodFavorableCount(),
-                summary.getSoilCondition(),
-                summary.getPenaltyDays()
-        );
-
-        microbeRedis.opsForValue().set(summaryKey, value);
-    }
 }
