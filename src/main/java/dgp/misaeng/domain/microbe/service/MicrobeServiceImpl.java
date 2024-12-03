@@ -617,7 +617,7 @@ public class MicrobeServiceImpl implements MicrobeService {
 
             float weight = recordNode.has("weight") ? (float) recordNode.get("weight").asDouble() : 0f;
             String imgUrl = recordNode.has("img_url") ? recordNode.get("img_url").asText() : "";
-
+            String timestamp = recordNode.has("timestamp") ? recordNode.get("timestamp").asText() : null;
             /**
              * 미생물 상태 판단
              * 1) 오늘 날짜가 아니라면 -> COMPLETE or FORBIDDEN
@@ -641,6 +641,7 @@ public class MicrobeServiceImpl implements MicrobeService {
 
             return MicrobeDetailResDTO.builder()
                     .time(time != null ? time.format(DateTimeFormatter.ofPattern("HH:mm")) : null)
+                    .timestamp(timestamp)
                     .microbeState(microbeState)
                     .foodCategory(foodCategories)
                     .weight(weight)
