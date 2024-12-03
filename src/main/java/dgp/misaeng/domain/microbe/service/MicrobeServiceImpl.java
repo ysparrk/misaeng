@@ -178,7 +178,7 @@ public class MicrobeServiceImpl implements MicrobeService {
             totalWeightToday = calculateTotalWeightToday(todayData);
 
             // FoodWeightState 계산
-            foodWeightState = (totalWeightToday > 5.0f) ? FoodWeightState.FULL : FoodWeightState.GOOD;
+            foodWeightState = (totalWeightToday > 1.5f) ? FoodWeightState.FULL : FoodWeightState.GOOD;
 
             // Forbidden 상태 계산
             forbidden = foodCategories.stream()
