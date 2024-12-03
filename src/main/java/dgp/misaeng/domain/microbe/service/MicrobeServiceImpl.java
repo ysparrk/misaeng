@@ -307,17 +307,27 @@ public class MicrobeServiceImpl implements MicrobeService {
     @Override
     public List<MicrobeYearMonthResDTO> getYearMonth(Long microbeId, YearMonth yearMonth) {
 
+        Microbe microbe = microbeRepository.findById(microbeId)
+                .orElseThrow(() -> new CustomException(ErrorCode.NO_SUCH_MICROBE) {
+                    @Override
+                    public ErrorCode getErrorCode() {
+                        return super.getErrorCode();
+                    }
+                });
+
+        LocalDate createdAt = microbe.getCreatedAt().toLocalDate();
+
         LocalDate startDate = yearMonth.atDay(1);
         LocalDate endDate = yearMonth.atEndOfMonth();
 
-        //endDate가 미래날짜인 경우 오늘날짜로 수정
+        //캘린더 시작-끝 날짜 조건에 따른 수정
         LocalDate today = LocalDate.now();
+        if (endDate.isBefore(createdAt)) return Collections.emptyList();
+        if (startDate.isBefore(createdAt)) startDate = createdAt;
         if (endDate.isAfter(today)) endDate = today;
-
         List<MicrobeYearMonthResDTO> result = new ArrayList<>();
 
         for (LocalDate date = startDate; !date.isAfter(endDate); date = date.plusDays(1)) {
-
             List<String> dailyData = redisService.getMicrobeDataForDate(microbeId, date);
 
             // 금지 음식 체크
