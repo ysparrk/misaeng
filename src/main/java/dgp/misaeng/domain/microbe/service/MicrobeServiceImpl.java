@@ -144,7 +144,20 @@ public class MicrobeServiceImpl implements MicrobeService {
             JsonNode latestDataJson = parseJson(latestData);
 
 
-            String rgbStat = latestDataJson.get("rgb_stat").asText();
+            String forRgb = "";
+            // 오늘의 데이터 중 가장 늦게 생성된 데이터 찾기 (is_empty=false)
+            if (!todayData.isEmpty()) {
+                forRgb = todayData.stream()
+                        .map(this::parseJson)
+                        .filter(json -> !json.get("is_empty").asBoolean())
+                        .max(Comparator.comparing(json -> json.get("timestamp").asLong()))
+                        .map(JsonNode::toString)
+                        .orElse(null);
+            }
+
+            JsonNode rgbJson = parseJson(forRgb);
+
+            String rgbStat = rgbJson.get("rgb_stat").asText();
             List<String> foodCategories = objectMapper.convertValue(
                     latestDataJson.get("food_category"),
                     new TypeReference<>() {}
