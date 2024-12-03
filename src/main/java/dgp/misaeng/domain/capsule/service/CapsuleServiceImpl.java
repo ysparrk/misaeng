@@ -32,7 +32,7 @@ public class CapsuleServiceImpl implements CapsuleService {
 
     @Transactional
     @Override
-    public void useCapsule(CapsuleReqDTO capsuleReqDTO) {
+    public CapsuleResDTO useCapsule(CapsuleReqDTO capsuleReqDTO) {
         List<Capsule> capsuleList = capsuleRepository.findAllBySerialNum(capsuleReqDTO.getSerialNum());
 
         for (CapsuleUseReqDTO capsuleUseReqDTO : capsuleReqDTO.getCapsuleList()) {
@@ -58,6 +58,10 @@ public class CapsuleServiceImpl implements CapsuleService {
                     .build();
             capsuleHistoryRepository.save(capsuleHistory);
         }
+
+        CapsuleResDTO capsule = getCapsule(capsuleReqDTO.getSerialNum());
+
+        return capsule;
     }
 
     @Override

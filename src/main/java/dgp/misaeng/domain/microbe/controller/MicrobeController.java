@@ -40,11 +40,7 @@ public class MicrobeController {
             @RequestPart("microbeReqDTO") MicrobeRecordReqDTO microbeRecordReqDTO,
             @RequestPart(value = "image", required = false) MultipartFile image) {
 
-        System.out.println("Request DTO: " + microbeRecordReqDTO);
-
         microbeService.saveRecord(microbeRecordReqDTO, image);
-
-        System.out.println("비어있는지" + microbeRecordReqDTO.isEmpty());
 
         return ResponseEntity.status(HttpStatus.OK)
                 .body(ResponseDTO.builder()
